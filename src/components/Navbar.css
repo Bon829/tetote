@@ -1,0 +1,80 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 5%;
+    background: rgba(250, 249, 248, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(182, 162, 142, 0.2);
+    transition: all 0.3s ease;
+}
+
+.navbar-brand a {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    letter-spacing: 0.2em;
+    color: var(--color-bg-dark);
+}
+
+.navbar-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.navbar-links a {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    position: relative;
+    transition: color 0.3s;
+}
+
+.navbar-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-primary);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.navbar-links a:hover,
+.navbar-links li.active a {
+    color: var(--color-text);
+}
+
+.navbar-links li.active a::after,
+.navbar-links a:hover::after {
+    transform: scaleX(1);
+}
+
+.navbar-auth .btn-outline {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    letter-spacing: 0.1em;
+}
+
+@media (max-width: 768px) {
+    .navbar-links {
+        gap: 1.5rem;
+    }
+
+    .navbar-brand a {
+        font-size: 1.4rem;
+    }
+}

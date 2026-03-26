@@ -1,66 +1,72 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import "./page.css";
+
+const services = [
+  { title: "ライトドレナージュ", duration: "60分", price: "¥8,800", desc: "初めての方にも最適。全身の軽いむくみをすっきり流します。" },
+  { title: "スタンダードコース", duration: "90分", price: "¥13,200", desc: "頭部から足先まで丁寧にアプローチ。もっとも人気のコースです。" },
+  { title: "プレミアムリラクゼーション", duration: "120分", price: "¥19,800", desc: "至高のアロマオイルと共に、完全なる解放と再生を体験してください。" },
+];
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-overlay"></div>
+        <div className="container hero-content">
+          <h1 className="hero-title animate-slide-up">LUMINA</h1>
+          <p className="hero-subtitle animate-slide-up delay-300">
+            A Sanctuary for Your Body and Soul.<br />
+            心身を解放する、至福のリンパドレナージュ。
           </p>
+          <div className="hero-actions animate-slide-up delay-500">
+            <a href="/booking" className="btn-primary">RESERVE</a>
+          </div>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Concept Section */}
+      <section className="concept-section container text-center">
+        <h2 className="section-title mb-4">CONCEPT</h2>
+        <h3 className="section-subtitle mb-8 text-serif">日常の喧騒から離れた、あなただけのサンクチュアリ</h3>
+        <p className="concept-text text-muted mb-8">
+          LUMINAでは、熟練のセラピストがお客様一人ひとりの身体の声に耳を傾け、<br />
+          最適なリンパドレナージュを提供します。<br />
+          滞った巡りを整え、本来の美しさと健やかさを目覚めさせる。<br />
+          心地よい香りと静寂に包まれながら、極上のリラクゼーションをお約束します。
+        </p>
+      </section>
+
+      {/* Services Section */}
+      <section className="services-section container">
+        <h2 className="section-title text-center mb-4">MENU</h2>
+        <h3 className="section-subtitle text-center mb-8 text-serif">施術メニュー</h3>
+        <div className="services-grid">
+          {services.map((s) => (
+            <div key={s.title} className="service-card glass-panel">
+              <p className="service-duration">{s.duration}</p>
+              <h3 className="service-name">{s.title}</h3>
+              <p className="service-desc text-muted">{s.desc}</p>
+              <p className="service-price">{s.price}</p>
+              <a href="/booking" className="btn-outline service-btn">RESERVE</a>
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer-section text-center">
+        <h2 className="footer-brand text-serif mb-4">LUMINA</h2>
+        <p className="footer-text mb-4 text-muted">
+          12:00 - 21:00（火曜定休）<br />
+          東京都渋谷区 1-2-3 ルミナビル 5F
+        </p>
+        <div className="footer-links">
+          <a href="#">Instagram</a>
+          <a href="#">お問い合わせ</a>
+          <a href="#">プライバシーポリシー</a>
+        </div>
+        <p className="footer-copy">© 2025 LUMINA. All rights reserved.</p>
+      </footer>
+    </>
   );
 }

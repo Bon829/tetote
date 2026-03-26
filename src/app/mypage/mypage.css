@@ -1,0 +1,110 @@
+.mypage-outer {
+    min-height: 100vh;
+    padding: 8rem 5% 4rem;
+    background: linear-gradient(135deg, #FAF9F8 0%, #EDE9E4 100%);
+}
+
+.mypage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mypage-user {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.mypage-title {
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+}
+
+.mypage-content {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.mypage-section-title {
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(182, 162, 142, 0.3);
+}
+
+.mypage-empty {
+    padding: 4rem;
+}
+
+.booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.booking-item {
+    padding: 1.5rem 2rem;
+}
+
+.booking-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.booking-menu-name {
+    font-size: 1.2rem;
+}
+
+.status-badge {
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+}
+
+.status-confirmed {
+    background: rgba(182, 162, 142, 0.15);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.status-pending {
+    background: rgba(200, 180, 100, 0.1);
+    color: #a08800;
+    border: 1px solid #a08800;
+}
+
+.status-cancelled {
+    background: rgba(200, 100, 100, 0.08);
+    color: #a05050;
+    border: 1px solid #a05050;
+}
+
+.booking-item-details {
+    display: flex;
+    gap: 2rem;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .mypage-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .booking-item-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
