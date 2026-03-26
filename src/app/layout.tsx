@@ -21,8 +21,8 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "LUMINA | Lymphatic Drainage Salon",
-  description: "心身を解放する、ラグジュアリーなリンパドレナージュサロン LUMINA。",
+  title: "tetote | lymph drainage",
+  description: "手のぬくもりで、やさしく解きほぐすリンパドレナージュサロン tetote。",
 };
 
 import { Providers } from "@/components/Providers";

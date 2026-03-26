@@ -14,7 +14,10 @@ export function Navbar() {
     return (
         <nav className="navbar">
             <div className="navbar-brand">
-                <Link href="/">LUMINA</Link>
+                <Link href="/">
+                    <span className="navbar-logo-label">lymph drainage</span>
+                    <span className="navbar-logo-name">tetote</span>
+                </Link>
             </div>
             <ul className="navbar-links">
                 <li className={isActive("/") ? "active" : ""}>

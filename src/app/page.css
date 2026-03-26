@@ -1,23 +1,98 @@
+/* ─── HERO: PC (デスクトップ) ─────────────────────── */
 .hero-section {
     position: relative;
-    height: 100vh;
+    background-color: #C9B5A6;
+    /* ロゴと同じベージュ背景 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.hero-bg-wrap {
+    position: relative;
+    width: 100%;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url('https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    padding: 6rem 0 2rem;
+    /* navbar分 + 余白 */
+}
+
+/* PCではロゴを正方形のまま綺麗に表示 */
+.hero-bg-wrap img {
+    position: static !important;
+    /* Next/Image の absolute を上書き */
+    width: auto !important;
+    height: auto !important;
+    max-height: 70vh;
+    max-width: min(70vh, 90vw);
+    object-fit: contain !important;
+    border-radius: 0;
 }
 
 .hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to bottom, rgba(250, 249, 248, 0.2), rgba(250, 249, 248, 0.8));
+    display: none;
+    /* PCではオーバーレイ不要 */
 }
+
+.hero-cta-wrap {
+    position: relative;
+    z-index: 2;
+    padding: 2rem 0 3.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+/* ─── HERO: スマホ ────────────────────────────────── */
+@media (max-width: 768px) {
+    .hero-section {
+        display: block;
+        height: 100svh;
+        background-color: #C9B5A6;
+    }
+
+    .hero-bg-wrap {
+        position: absolute;
+        inset: 0;
+        padding: 0;
+    }
+
+    /* スマホはフル画面 cover */
+    .hero-bg-wrap img {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: none;
+        max-width: none;
+        object-fit: cover !important;
+        object-position: center !important;
+    }
+
+    .hero-overlay {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(to bottom,
+                rgba(201, 181, 168, 0) 55%,
+                rgba(201, 181, 168, 0.55) 100%);
+    }
+
+    .hero-cta-wrap {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        padding: 1.5rem 0 4rem;
+    }
+}
+
 
 .hero-content {
     position: relative;
@@ -25,30 +100,41 @@
     text-align: center;
 }
 
-.hero-title {
-    font-size: 5rem;
-    letter-spacing: 0.15em;
-    margin-bottom: 1rem;
+.hero-tagline {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    letter-spacing: 0.25em;
     color: var(--color-bg-dark);
+    margin-bottom: 0.75rem;
+    opacity: 0.8;
+}
+
+.hero-title {
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    letter-spacing: 0.2em;
+    color: var(--color-bg-dark);
+    margin-bottom: 1.5rem;
 }
 
 .hero-subtitle {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--color-text);
     margin-bottom: 3rem;
     line-height: 2;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
+    display: block;
 }
 
 .section-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
     letter-spacing: 0.2em;
     color: var(--color-primary);
     margin-top: var(--spacing-section);
 }
 
 .section-subtitle {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: var(--color-bg-dark);
 }
 
@@ -57,74 +143,54 @@
 }
 
 .concept-text {
-    max-width: 600px;
+    max-width: 620px;
     margin-left: auto;
     margin-right: auto;
-    line-height: 2.2;
-}
-
-.footer-section {
-    padding: 4rem 2rem;
-    background-color: var(--color-bg-dark);
-    color: var(--color-bg-light);
-}
-
-.footer-brand {
-    color: var(--color-primary);
-    font-size: 2rem;
-}
-
-.footer-text {
-    color: #aaaaaa;
-    font-size: 0.9rem;
-    line-height: 2;
-}
-
-.footer-links a {
-    margin: 0 1rem;
-    font-size: 0.9rem;
-    color: var(--color-bg-light);
-    opacity: 0.7;
-    transition: opacity 0.3s;
-}
-
-.footer-links a:hover {
-    opacity: 1;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 3.5rem;
-    }
-
-    .section-subtitle {
-        font-size: 1.6rem;
-    }
+    line-height: 2.4;
 }
 
 /* Services Section */
 .services-section {
-    padding-bottom: var(--spacing-section);
+    padding-bottom: 6rem;
 }
 
 .services-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
 }
 
 .service-card {
     display: flex;
     flex-direction: column;
     text-align: center;
-    padding: 2.5rem 2rem;
+    padding: 2.5rem 1.5rem;
+    position: relative;
     transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .service-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 30px 60px -15px rgba(182, 162, 142, 0.3);
+}
+
+.service-card.popular {
+    border: 1.5px solid var(--color-primary);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-primary);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.25rem 1rem;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
 }
 
 .service-duration {
@@ -135,12 +201,12 @@
 }
 
 .service-name {
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
 }
 
 .service-desc {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     line-height: 1.9;
     flex-grow: 1;
     margin-bottom: 1.5rem;
@@ -148,9 +214,10 @@
 
 .service-price {
     font-family: var(--font-serif);
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     color: var(--color-primary);
     margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
 }
 
 .service-btn {
@@ -159,17 +226,136 @@
     border-radius: 4px;
 }
 
+/* Addons */
+.addons-section {
+    margin-top: 4rem;
+    padding: 2.5rem 3rem;
+    background: rgba(201, 181, 168, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(182, 162, 142, 0.25);
+}
+
+.addons-title {
+    text-align: center;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+    color: var(--color-primary);
+    margin-bottom: 2rem;
+}
+
+.addons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.addon-card {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    border-right: 1px solid rgba(182, 162, 142, 0.25);
+}
+
+.addon-card:last-child {
+    border-right: none;
+}
+
+.addon-name {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.05em;
+}
+
+.addon-price {
+    display: block;
+    font-family: var(--font-serif);
+    color: var(--color-primary);
+    font-size: 1rem;
+}
+
+.addon-note {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+    line-height: 1.6;
+}
+
 /* Footer */
+.footer-section {
+    padding: 5rem 2rem 3rem;
+    background-color: #2C2520;
+    color: var(--color-bg-light);
+}
+
+.footer-tagline {
+    font-family: var(--font-serif);
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: var(--color-primary-light);
+    margin-bottom: 0.5rem;
+}
+
+.footer-brand {
+    color: var(--color-primary-light);
+    font-size: 2.5rem;
+    letter-spacing: 0.2em;
+}
+
+.footer-text {
+    color: #aaaaaa;
+    font-size: 0.9rem;
+    line-height: 2;
+}
+
+.footer-links {
+    margin: 1.5rem 0;
+}
+
+.footer-links a {
+    margin: 0 1rem;
+    font-size: 0.9rem;
+    color: var(--color-bg-light);
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.footer-links a:hover {
+    opacity: 1;
+}
+
 .footer-copy {
     margin-top: 2rem;
-    opacity: 0.4;
-    font-size: 0.8rem;
+    opacity: 0.3;
+    font-size: 0.75rem;
 }
 
 @media (max-width: 900px) {
     .services-grid {
         grid-template-columns: 1fr;
-        max-width: 500px;
-        margin: 0 auto;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .addons-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .addon-card {
+        border-right: none;
+        border-bottom: 1px solid rgba(182, 162, 142, 0.2);
+    }
+
+    .addon-card:last-child {
+        border-bottom: none;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.5rem;
     }
 }
