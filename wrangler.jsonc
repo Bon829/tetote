@@ -2,6 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "tetote",
+  "vars": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_Ym9sZC10cm91dC0zMS5jbGVyay5hY2NvdW50cy5kZXYk",
+    "NEXT_PUBLIC_CONVEX_URL": "https://befitting-panther-523.convex.cloud"
+  },
   "compatibility_date": "2025-09-27",
   "compatibility_flags": [
     "nodejs_compat"
