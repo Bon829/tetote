@@ -28,6 +28,19 @@ export const createBooking = mutation({
 
         if (!user) throw new Error("ユーザーが見つかりません");
 
+        // ★ Duplicate booking prevention: check if the same slot is already taken
+        const existing = await ctx.db
+            .query("bookings")
+            .withIndex("by_date_time", (q) =>
+                q.eq("date", args.date).eq("time", args.time)
+            )
+            .filter((q) => q.neq(q.field("status"), "cancelled"))
+            .first();
+
+        if (existing) {
+            throw new Error("この時間帯はすでに予約が入っています。別の時間をお選びください。");
+        }
+
         return await ctx.db.insert("bookings", {
             userId: user._id,
             menuId: args.menuId,
@@ -62,5 +75,30 @@ export const listMyBookings = query({
                 return { ...b, menu };
             })
         );
+    },
+});
+
+export const getBookedSlotsForDate = query({
+    args: { date: v.string() },
+    handler: async (ctx, args) => {
+        const bookings = await ctx.db
+            .query("bookings")
+            .withIndex("by_date", (q) => q.eq("date", args.date))
+            .filter((q) => q.neq(q.field("status"), "cancelled"))
+            .collect();
+        return bookings.map((b) => b.time);
+    },
+});
+
+export const cancelBooking = mutation({
+    args: { bookingId: v.id("bookings") },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("認証が必要です");
+
+        const booking = await ctx.db.get(args.bookingId);
+        if (!booking) throw new Error("予約が見つかりません");
+
+        await ctx.db.patch(args.bookingId, { status: "cancelled" });
     },
 });

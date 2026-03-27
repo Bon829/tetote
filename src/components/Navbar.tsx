@@ -31,6 +31,11 @@ export function Navbar() {
                         <Link href="/mypage">MY PAGE</Link>
                     </li>
                 )}
+                {isSignedIn && (
+                    <li className={isActive("/admin/availability") ? "active" : ""}>
+                        <Link href="/admin/availability">ADMIN</Link>
+                    </li>
+                )}
                 <li className="navbar-auth">
                     {isSignedIn ? (
                         <SignOutButton>

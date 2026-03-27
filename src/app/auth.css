@@ -1,0 +1,61 @@
+.auth-outer {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: #C9B5A6; /* Match home page hero */
+    position: relative;
+    overflow-x: hidden;
+}
+
+.auth-outer::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, rgba(184, 155, 138, 0.1) 0%, rgba(184, 155, 138, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.auth-outer::after {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 40vw;
+    height: 40vw;
+    background: radial-gradient(circle, rgba(212, 196, 183, 0.15) 0%, rgba(212, 196, 183, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.auth-card-wrap {
+    position: relative;
+    z-index: 1;
+}
+
+.auth-brand {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-brand p {
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--color-primary);
+    margin-bottom: 0.2rem;
+}
+
+.auth-brand h1 {
+    font-family: var(--font-serif-en); /* Use English serif for branding */
+    font-size: 2.2rem;
+    letter-spacing: 0.25em;
+    color: var(--color-bg-dark);
+    font-weight: 400;
+}
