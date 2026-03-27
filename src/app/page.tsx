@@ -58,9 +58,9 @@ export default function Home() {
         <h2 className="section-title mb-4">CONCEPT</h2>
         <h3 className="section-subtitle mb-8 text-serif">日常のなかに、ほっとできる場所を。</h3>
         <p className="concept-text text-muted mb-8">
-          tetoteは、「手（テ）と手（テ）をつなぐ」想いを大切に、<br />
-          お客様一人ひとりに丁寧に向き合うリンパドレナージュサロンです。<br />
-          施術者の手のぬくもりで、滞った流れをやさしくほぐして。<br />
+          tetoteは、「手（テ）と手（テ）をつなぐ」想いを大切に、<br className="pc-br" />
+          お客様一人ひとりに丁寧に向き合うリンパドレナージュサロンです。<br className="pc-br" />
+          施術者の手のぬくもりで、滞った流れをやさしくほぐして。<br className="pc-br" />
           スッキリした軽さと、心地よいゆるみをお届けします。
         </p>
       </section>

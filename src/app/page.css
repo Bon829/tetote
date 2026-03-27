@@ -358,4 +358,8 @@
     .section-subtitle {
         font-size: 1.5rem;
     }
+
+    .pc-br {
+        display: none;
+    }
 }
