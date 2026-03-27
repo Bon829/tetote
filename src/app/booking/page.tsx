@@ -236,7 +236,7 @@ export default function BookingPage() {
                                                     cellContent = "…";
                                                 } else if (isSelected) {
                                                     cellClass += " selected";
-                                                    cellContent = "◎";
+                                                    cellContent = "○"; // Changed from ◎ to ○ per user request
                                                 } else if (status === "available") {
                                                     cellClass += " available";
                                                     cellContent = "○";
@@ -267,7 +267,7 @@ export default function BookingPage() {
                         {/* Legend */}
                         <div className="grid-legend">
                             <span className="legend-item"><span className="legend-mark available">○</span>予約可</span>
-                            <span className="legend-item"><span className="legend-mark selected">◎</span>選択中</span>
+                            <span className="legend-item"><span className="legend-mark selected">○</span>選択中</span>
                             <span className="legend-item"><span className="legend-mark booked">×</span>予約不可</span>
                         </div>
 

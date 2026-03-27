@@ -18,6 +18,7 @@ const localization = {
         start: {
             ...jaJP.signIn?.start,
             title: "",
+            subtitle: "",
             actionText: "サインイン / 登録",
         },
     },
@@ -26,6 +27,7 @@ const localization = {
         start: {
             ...jaJP.signUp?.start,
             title: "",
+            subtitle: "",
             actionText: "アカウントを作成",
         },
     },
