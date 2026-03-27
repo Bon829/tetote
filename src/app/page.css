@@ -58,6 +58,7 @@
     .hero-bg-wrap {
         position: absolute;
         inset: 0;
+        top: 5.5rem;
         padding: 0;
     }
 
@@ -77,6 +78,7 @@
         display: block;
         position: absolute;
         inset: 0;
+        top: 5.5rem;
         z-index: 1;
         background: linear-gradient(to bottom,
                 rgba(201, 181, 168, 0) 55%,
