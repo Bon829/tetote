@@ -6,7 +6,7 @@
     z-index: 1000;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     padding: 1.5rem 5%;
     background: rgba(250, 249, 248, 0.85);
     backdrop-filter: blur(12px);
@@ -14,6 +14,31 @@
     border-bottom: 1px solid rgba(182, 162, 142, 0.2);
     transition: all 0.3s ease;
 }
+
+.navbar-brand a {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-decoration: none;
+}
+
+.navbar-logo-label {
+    font-family: var(--font-serif);
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--color-text-muted);
+    line-height: 1;
+    margin-bottom: 1px;
+}
+
+.navbar-logo-name {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    letter-spacing: 0.15em;
+    color: var(--color-bg-dark);
+    line-height: 1;
+}
+
 
 .navbar-links {
     display: flex;
@@ -63,22 +88,11 @@
 }
 
 @media (max-width: 768px) {
-    .navbar {
-        padding: 1rem 3%;
-    }
-
     .navbar-links {
-        gap: 0.8rem;
-        flex-wrap: wrap;
-        justify-content: center;
+        gap: 1.5rem;
     }
 
-    .navbar-links a {
-        font-size: 0.75rem;
-    }
-
-    .navbar-auth .btn-outline {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.75rem;
+    .navbar-brand a {
+        font-size: 1.4rem;
     }
 }
