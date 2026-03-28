@@ -1,8 +1,8 @@
 /* ─── HERO: PC (デスクトップ) ─────────────────────── */
 .hero-section {
     position: relative;
-    background-color: #C9B5A6;
-    /* ロゴと同じベージュ背景 */
+    background-color: #DFD1C1;
+    /* hiro.jpg に合わせた明るいベージュ */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -52,7 +52,7 @@
     .hero-section {
         display: block;
         height: 100svh;
-        background-color: #C9B5A6;
+        background-color: #DFD1C1;
     }
 
     .hero-bg-wrap {
@@ -81,8 +81,8 @@
         top: 5.5rem;
         z-index: 1;
         background: linear-gradient(to bottom,
-                rgba(201, 181, 168, 0) 55%,
-                rgba(201, 181, 168, 0.55) 100%);
+                rgba(223, 209, 193, 0) 55%,
+                rgba(223, 209, 193, 0.55) 100%);
     }
 
     .hero-cta-wrap {
