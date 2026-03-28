@@ -39,7 +39,7 @@ export default function Home() {
       <section className="hero-section">
         <div className="hero-bg-wrap">
           <Image
-            src="/hero.jpg"
+            src="/hiro.png"
             alt="lymph drainage tetote"
             fill
             priority
