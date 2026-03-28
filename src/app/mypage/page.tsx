@@ -60,8 +60,14 @@ export default function MyPage() {
                             <div className="booking-item-details">
                                 <span>📅 {b.date}</span>
                                 <span>🕐 {b.time}〜</span>
-                                <span>¥{b.menu?.price?.toLocaleString()}</span>
+                                <span>🕒 {b.totalDuration ?? b.menu?.durationMinutes}分</span>
+                                <span>¥{(b.totalPrice ?? b.menu?.price)?.toLocaleString()}</span>
                             </div>
+                            {b.addons && b.addons.length > 0 && (
+                                <div className="booking-item-addons" style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                                    追加: {b.addons.map((a: any) => a.title).join("・")}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

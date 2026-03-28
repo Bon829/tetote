@@ -172,3 +172,30 @@ a {
   border-radius: 12px;
   padding: 3rem;
 }
+
+/* ─── Clerk UI overrides ───────────────────────────── */
+/* Hide "Secured by Clerk" and development mode banners */
+.cl-internal-b3fm6y,
+[data-localization-key="footerActionText"],
+.cl-footer,
+.cl-footerAction,
+.cl-internal-1dauvpf,
+.cl-developmentEnvironmentBanner,
+.cl-internal-b3al4t,
+.cl-internal-phfxlr,
+.cl-devMode,
+#clerk-components div[style*="bottom: 12px;"] {
+  display: none !important;
+}
+
+/* Hide "前回使用したもの" (last used) social login section */
+.cl-alternativeMethods,
+.cl-alternativeMethodsBlockButton,
+.cl-identityPreviewEditButtonIcon {
+  display: none !important;
+}
+
+/* Auth page: center content vertically with navbar padding */
+.auth-outer {
+  padding-top: 5rem;
+}

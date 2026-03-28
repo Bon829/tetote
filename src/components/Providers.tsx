@@ -10,7 +10,6 @@ const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder-url
 const convex = new ConvexReactClient(convexUrl);
 
 // Override localization for unified auth flow
-// We use a safer approach to avoid lint errors with version-specific keys
 const localization = {
     ...jaJP,
     signIn: {
@@ -19,7 +18,6 @@ const localization = {
             ...jaJP.signIn?.start,
             title: "",
             subtitle: "",
-            actionText: "サインイン / 登録",
         },
     },
     signUp: {
@@ -28,7 +26,6 @@ const localization = {
             ...jaJP.signUp?.start,
             title: "",
             subtitle: "",
-            actionText: "アカウントを作成",
         },
     },
 };
@@ -50,16 +47,30 @@ const appearance = {
             backdropFilter: "blur(20px)",
             padding: "2.5rem 2rem",
         },
+        // Hide the application title/header
         headerTitle: {
-            fontFamily: "var(--font-serif), serif",
-            color: "#3A3028",
-            letterSpacing: "0.15em",
-            fontSize: "1.6rem",
-            fontWeight: "400",
+            display: "none",
         },
         headerSubtitle: {
-            color: "#9E9088",
-            fontSize: "0.95rem",
+            display: "none",
+        },
+        logoBox: {
+            display: "none",
+        },
+        // Remove 'Sign In / Sign Up' switcher text and links
+        footer: {
+            display: "none",
+        },
+        footerAction: {
+            display: "none",
+        },
+        // Hide "Previously used" / alternative methods
+        alternativeMethods: {
+            display: "none",
+        },
+        // Hide divider and sub-text
+        dividerRow: {
+            display: "none",
         },
         formButtonPrimary: {
             fontFamily: "var(--font-serif), serif",

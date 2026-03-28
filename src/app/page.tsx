@@ -98,20 +98,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer-section text-center">
-        <p className="footer-tagline">lymph drainage</p>
-        <h2 className="footer-brand text-serif mb-4">tetote</h2>
-        <p className="footer-text mb-4 text-muted">
-          ご予約・お問い合わせはInstagramのDMよりお気軽にどうぞ。
-        </p>
-        <div className="footer-links">
-          <a href="#">Instagram</a>
-          <a href="#">ご予約</a>
-          <a href="#">プライバシーポリシー</a>
-        </div>
-        <p className="footer-copy">© 2025 lymph drainage tetote. All rights reserved.</p>
-      </footer>
     </>
   );
 }

@@ -71,3 +71,11 @@
         max-width: 400px;
     }
 }
+
+/* Base Clerk Hiding Rules (for "Secured by", "dev mode", etc) */
+.cl-internal-b3al6g,
+.cl-badge,
+div[class*="cl-internal-"][style*="position: fixed"],
+div[style*="z-index: 9999"] {
+    display: none !important;
+}

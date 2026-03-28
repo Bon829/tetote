@@ -14,16 +14,19 @@ export function Navbar() {
 
     const isAdmin = user?.publicMetadata?.role === "admin";
     const isActive = (href: string) => pathname === href;
+    const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
 
     const closeMenu = () => setIsMenuOpen(false);
 
     return (
         <nav className="navbar">
             <div className="navbar-brand">
-                <Link href="/" onClick={closeMenu}>
-                    <span className="navbar-logo-label">lymph drainage</span>
-                    <span className="navbar-logo-name">tetote</span>
-                </Link>
+                {!isAuthPage && (
+                    <Link href="/" onClick={closeMenu}>
+                        <span className="navbar-logo-label">lymph drainage</span>
+                        <span className="navbar-logo-name">tetote</span>
+                    </Link>
+                )}
             </div>
             <div className={`navbar-toggle ${isMenuOpen ? "open" : ""}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 <span></span><span></span><span></span>
@@ -34,6 +37,9 @@ export function Navbar() {
                 </li>
                 <li className={isActive("/booking") ? "active" : ""}>
                     <Link href="/booking" onClick={closeMenu}>RESERVE</Link>
+                </li>
+                <li>
+                    <a href="https://www.instagram.com/____tetote/" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>Instagram</a>
                 </li>
                 {isSignedIn && (
                     <li className={isActive("/mypage") ? "active" : ""}>

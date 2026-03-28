@@ -177,6 +177,16 @@ function BookingPageContent() {
                         <br />
                         {selectedMenuData?.title}
                     </p>
+                    {selectedAddons.length > 0 && (
+                        <div style={{ marginTop: "0.75rem" }}>
+                            <p className="text-muted" style={{ fontSize: "0.88rem" }}>
+                                {selectedAddons.map((a) => a.title).join("・")}
+                            </p>
+                        </div>
+                    )}
+                    <p className="text-muted" style={{ marginTop: "0.5rem", fontSize: "0.95rem" }}>
+                        合計: ¥{totalPrice.toLocaleString()} / {totalDuration}分
+                    </p>
                     <a href="/mypage" className="btn-primary mt-8" style={{ display: "inline-block" }}>
                         予約を確認する
                     </a>
