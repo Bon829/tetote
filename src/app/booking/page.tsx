@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { useSearchParams } from "next/navigation";
 import { api } from "../../../convex/_generated/api";
@@ -40,7 +40,7 @@ function formatDisplayDate(dateStr: string) {
     return { short: `${m}/${day}`, dow };
 }
 
-export default function BookingPage() {
+function BookingPageContent() {
     const searchParams = useSearchParams();
     const menus = useQuery(api.menus.listMenus);
     const createBooking = useMutation(api.bookings.createBooking);
@@ -440,6 +440,15 @@ export default function BookingPage() {
         </div>
     );
 }
+
+export default function BookingPage() {
+    return (
+        <Suspense fallback={<div className="booking-outer"><p className="text-center">読み込み中...</p></div>}>
+            <BookingPageContent />
+        </Suspense>
+    );
+}
+
 
 // Demo menus used when Convex hasn't seeded data yet
 const demoMenus = [
