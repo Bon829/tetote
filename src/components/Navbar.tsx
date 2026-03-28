@@ -21,7 +21,8 @@ export function Navbar() {
         <nav className="navbar">
             <div className="navbar-brand">
                 <Link href="/" onClick={closeMenu}>
-                    <img src="/logo.jpg" alt="tetote" className="navbar-logo-img" />
+                    <span className="navbar-logo-label">lymph drainage</span>
+                    <span className="navbar-logo-name">tetote</span>
                 </Link>
             </div>
             <div className={`navbar-toggle ${isMenuOpen ? "open" : ""}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
