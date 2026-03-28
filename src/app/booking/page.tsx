@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import "./booking.css";
@@ -41,9 +42,18 @@ function formatDisplayDate(dateStr: string) {
 }
 
 function BookingPageContent() {
+    const { isLoaded, isSignedIn } = useAuth();
+    const router = useRouter();
     const searchParams = useSearchParams();
     const menus = useQuery(api.menus.listMenus);
     const createBooking = useMutation(api.bookings.createBooking);
+
+    // Redirect if not signed in (fallback for middleware)
+    useEffect(() => {
+        if (isLoaded && !isSignedIn) {
+            router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
+        }
+    }, [isLoaded, isSignedIn, router]);
 
     const [step, setStep] = useState<Step>(1);
     const [selectedMenu, setSelectedMenu] = useState<Id<"menus"> | null>(null);
