@@ -51,9 +51,7 @@ export function Navbar() {
                             <button className="btn-outline" onClick={closeMenu}>SIGN OUT</button>
                         </SignOutButton>
                     ) : (
-                        <SignInButton mode="modal">
-                            <button className="btn-outline" onClick={closeMenu}>SIGN IN</button>
-                        </SignInButton>
+                        <Link href="/sign-in" className="btn-outline" onClick={closeMenu}>SIGN IN</Link>
                     )}
                 </li>
             </ul>
