@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignInButton, SignOutButton, useAuth, useUser } from "@clerk/nextjs";
+import { SignOutButton, useAuth, useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import "./Navbar.css";
 
@@ -20,9 +20,8 @@ export function Navbar() {
     return (
         <nav className="navbar">
             <div className="navbar-brand">
-                <Link href="/">
-                    <span className="navbar-logo-label">lymph drainage</span>
-                    <span className="navbar-logo-name">tetote</span>
+                <Link href="/" onClick={closeMenu}>
+                    <img src="/logo.jpg" alt="tetote" className="navbar-logo-img" />
                 </Link>
             </div>
             <div className={`navbar-toggle ${isMenuOpen ? "open" : ""}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
