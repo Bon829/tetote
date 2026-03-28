@@ -92,6 +92,7 @@ export const getAvailabilityGrid = query({
         startDate: v.string(), // YYYY-MM-DD
         days: v.number(),      // how many days to show
         timeSlots: v.array(v.string()), // ["10:00", "11:00", ...]
+        totalDuration: v.optional(v.number()), // Total duration in minutes (including addons)
     },
     handler: async (ctx, args) => {
         const settings = await ctx.db.query("availability_settings").first();
@@ -123,11 +124,26 @@ export const getAvailabilityGrid = query({
                 .withIndex("by_date", (q) => q.eq("date", dateStr))
                 .collect();
 
-            const bookedTimes = new Set(
-                dayBookings
-                    .filter((b) => b.status !== "cancelled")
-                    .map((b) => b.time)
-            );
+            const bookedTimes = new Set();
+            const blockedByDuration: Set<string> = new Set();
+
+            for (const b of dayBookings) {
+                if (b.status === "cancelled") continue;
+                bookedTimes.add(b.time);
+
+                // If booking spans multiple slots
+                const duration = b.totalDuration ?? 60;
+                if (duration > 60) {
+                    const extraSlots = Math.ceil(duration / 60) - 1;
+                    const startTimeIdx = args.timeSlots.indexOf(b.time);
+                    if (startTimeIdx !== -1) {
+                        for (let i = 1; i <= extraSlots; i++) {
+                            const nextSlot = args.timeSlots[startTimeIdx + i];
+                            if (nextSlot) blockedByDuration.add(nextSlot);
+                        }
+                    }
+                }
+            }
 
             for (const time of args.timeSlots) {
                 if (dayBlocked) {
@@ -177,9 +193,52 @@ export const getAvailabilityGrid = query({
                     continue;
                 }
 
-                if (bookedTimes.has(time)) {
+                if (bookedTimes.has(time) || blockedByDuration.has(time)) {
                     grid[dateStr][time] = "booked";
                     continue;
+                }
+
+                // If we are looking for a specific duration, check if subsequent slots are also free
+                if (args.totalDuration && args.totalDuration > 60) {
+                    const neededSlots = Math.ceil(args.totalDuration / 60);
+                    const timeIdx = args.timeSlots.indexOf(time);
+                    let canFit = true;
+
+                    for (let i = 0; i < neededSlots; i++) {
+                        const checkTime = args.timeSlots[timeIdx + i];
+                        if (!checkTime) {
+                            canFit = false; // End of available hours
+                            break;
+                        }
+                        
+                        // Check if this specific slot would be blocked/booked
+                        // (We need to re-run basic slot checks or ensure they are consistent)
+                        // Simplified: check if checkTime is already in bookedTimes/blockedByDuration
+                        if (bookedTimes.has(checkTime) || blockedByDuration.has(checkTime)) {
+                            canFit = false;
+                            break;
+                        }
+
+                        // Also check Business Hours and individual blocks for subsequent slots
+                        const bhSlot = cfg.businessHours?.find((b: any) => b.dayOfWeek === dayOfWeek);
+                        if (bhSlot && !bhSlot.isClosed) {
+                            const tNum = parseInt(checkTime.replace(":", ""), 10);
+                            const endNum = parseInt(bhSlot.endTime.replace(":", ""), 10);
+                            if (tNum > endNum) {
+                                canFit = false;
+                                break;
+                            }
+                        }
+                        if (cfg.blockedSlots.some(s => s.date === dateStr && s.time === checkTime)) {
+                            canFit = false;
+                            break;
+                        }
+                    }
+
+                    if (!canFit) {
+                        grid[dateStr][time] = "blocked";
+                        continue;
+                    }
                 }
 
                 grid[dateStr][time] = "available";

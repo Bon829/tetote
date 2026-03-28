@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignInButton, SignOutButton, useAuth } from "@clerk/nextjs";
+import { SignInButton, SignOutButton, useAuth, useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import "./Navbar.css";
 
 export function Navbar() {
     const { isSignedIn } = useAuth();
+    const { user } = useUser();
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    const isAdmin = user?.publicMetadata?.role === "admin";
     const isActive = (href: string) => pathname === href;
 
     const closeMenu = () => setIsMenuOpen(false);
@@ -38,7 +40,7 @@ export function Navbar() {
                         <Link href="/mypage" onClick={closeMenu}>MY PAGE</Link>
                     </li>
                 )}
-                {isSignedIn && (
+                {isSignedIn && isAdmin && (
                     <li className={isActive("/admin/availability") ? "active" : ""}>
                         <Link href="/admin/availability" onClick={closeMenu}>ADMIN</Link>
                     </li>

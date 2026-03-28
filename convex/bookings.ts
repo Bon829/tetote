@@ -4,8 +4,15 @@ import { v } from "convex/values";
 export const createBooking = mutation({
     args: {
         menuId: v.id("menus"),
+        addons: v.optional(v.array(v.object({
+            title: v.string(),
+            price: v.number(),
+            duration: v.number(),
+        }))),
         date: v.string(),
         time: v.string(),
+        totalDuration: v.number(),
+        totalPrice: v.number(),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -28,24 +35,57 @@ export const createBooking = mutation({
 
         if (!user) throw new Error("ユーザーが見つかりません");
 
-        // ★ Duplicate booking prevention: check if the same slot is already taken
-        const existing = await ctx.db
-            .query("bookings")
-            .withIndex("by_date_time", (q) =>
-                q.eq("date", args.date).eq("time", args.time)
-            )
-            .filter((q) => q.neq(q.field("status"), "cancelled"))
-            .first();
+        // 1時間単位のスロット計算
+        const neededSlots = Math.ceil(args.totalDuration / 60);
+        const [startH, startM] = args.time.split(":").map(Number);
+        
+        for (let i = 0; i < neededSlots; i++) {
+            const currentH = startH + i;
+            const timeStr = `${currentH.toString().padStart(2, "0")}:00`;
 
-        if (existing) {
-            throw new Error("この時間帯はすでに予約が入っています。別の時間をお選びください。");
+            // Check if slot is already taken
+            const existing = await ctx.db
+                .query("bookings")
+                .withIndex("by_date_time", (q) =>
+                    q.eq("date", args.date).eq("time", timeStr)
+                )
+                .filter((q) => q.neq(q.field("status"), "cancelled"))
+                .first();
+
+            if (existing) {
+                throw new Error(`ご希望の時間枠の一部（${timeStr}）はすでに予約が入っています。`);
+            }
+
+            // Check if another booking's duration covers this slot
+            // Since we use 1-hour slots, a booking at 10:00 for 2 hours covers 11:00.
+            // We need to check bookings that started EARLIER but overlap.
+            const overlapping = await ctx.db
+                .query("bookings")
+                .withIndex("by_date", (q) => q.eq("date", args.date))
+                .filter((q) => q.and(
+                    q.neq(q.field("status"), "cancelled"),
+                    q.lt(q.field("time"), timeStr)
+                ))
+                .collect();
+            
+            for (const b of overlapping) {
+                const bDuration = b.totalDuration ?? 60;
+                const [bH, bM] = b.time.split(":").map(Number);
+                const bEndH = bH + Math.ceil(bDuration / 60);
+                if (currentH < bEndH) {
+                    throw new Error(`ご希望の時間枠の一部（${timeStr}）はすでに予約が入っています。`);
+                }
+            }
         }
 
         return await ctx.db.insert("bookings", {
             userId: user._id,
             menuId: args.menuId,
+            addons: args.addons,
             date: args.date,
             time: args.time,
+            totalDuration: args.totalDuration,
+            totalPrice: args.totalPrice,
             status: "confirmed",
         });
     },

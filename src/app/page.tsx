@@ -1,5 +1,6 @@
 import "./page.css";
 import Image from "next/image";
+import Link from "next/link";
 
 const services = [
   {
@@ -48,7 +49,7 @@ export default function Home() {
         </div>
         <div className="hero-overlay"></div>
         <div className="hero-cta-wrap animate-slide-up delay-500">
-          <a href="/booking" className="btn-primary">ご予約はこちら</a>
+          <Link href="/booking?menuTitle=しっかりケアコース" className="btn-primary">ご予約はこちら</Link>
         </div>
       </section>
 
@@ -77,7 +78,7 @@ export default function Home() {
               <h3 className="service-name">{s.title}</h3>
               <p className="service-desc text-muted">{s.desc}</p>
               <p className="service-price">{s.price}</p>
-              <a href="/booking" className="btn-outline service-btn">予約する</a>
+              <Link href={`/booking?menuTitle=${encodeURIComponent(s.title)}`} className="btn-outline service-btn">予約する</Link>
             </div>
           ))}
         </div>

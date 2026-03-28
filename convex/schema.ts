@@ -19,8 +19,15 @@ export default defineSchema({
     bookings: defineTable({
         userId: v.id("users"),
         menuId: v.id("menus"),
+        addons: v.optional(v.array(v.object({
+            title: v.string(),
+            price: v.number(),
+            duration: v.number(),
+        }))),
         date: v.string(), // ISO String (YYYY-MM-DD)
         time: v.string(), // HH:mm
+        totalDuration: v.optional(v.number()),
+        totalPrice: v.optional(v.number()),
         status: v.union(v.literal("pending"), v.literal("confirmed"), v.literal("cancelled")),
     }).index("by_user", ["userId"])
         .index("by_date", ["date"])

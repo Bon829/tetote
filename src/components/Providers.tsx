@@ -40,52 +40,66 @@ const appearance = {
         colorText: "#3A3028",
         colorTextSecondary: "#9E9088",
         fontFamily: "var(--font-sans), sans-serif",
-        borderRadius: "4px",
+        borderRadius: "8px",
     },
     elements: {
         card: {
             boxShadow: "0 20px 40px rgba(0, 0, 0, 0.05)",
             border: "1px solid rgba(255, 255, 255, 0.4)",
-            background: "rgba(255, 255, 255, 0.6)",
-            backdropFilter: "blur(16px)",
+            background: "rgba(255, 255, 255, 0.7)",
+            backdropFilter: "blur(20px)",
+            padding: "2.5rem 2rem",
         },
         headerTitle: {
             fontFamily: "var(--font-serif), serif",
             color: "#3A3028",
-            letterSpacing: "0.1em",
-            fontSize: "1.5rem",
+            letterSpacing: "0.15em",
+            fontSize: "1.6rem",
+            fontWeight: "400",
         },
         headerSubtitle: {
             color: "#9E9088",
+            fontSize: "0.95rem",
         },
         formButtonPrimary: {
             fontFamily: "var(--font-serif), serif",
             fontSize: "1rem",
-            letterSpacing: "0.1em",
+            letterSpacing: "0.15em",
             backgroundColor: "#B89B8A",
-            color: "#fff",
-            boxShadow: "0 10px 30px -10px rgba(182, 162, 142, 0.5)",
+            textTransform: "uppercase",
+            height: "3.2rem",
+            boxShadow: "0 10px 25px -5px rgba(184, 155, 138, 0.4)",
             transition: "all 0.3s ease",
             "&:hover": {
-                backgroundColor: "#D4C4B7",
+                backgroundColor: "#A68A79",
+                transform: "translateY(-1px)",
             }
         },
-        formFieldLabel: {
-            fontFamily: "var(--font-serif), serif",
-            color: "#5A4E44",
+        formFieldInput: {
+            backgroundColor: "rgba(255, 255, 255, 0.6)",
+            border: "1px solid rgba(182, 162, 142, 0.2)",
+            "&:focus": {
+                border: "1px solid #B89B8A",
+                boxShadow: "0 0 0 2px rgba(184, 155, 138, 0.1)",
+            }
         },
         socialButtonsBlockButton: {
-            fontFamily: "var(--font-sans), sans-serif",
-            border: "1px solid rgba(182, 162, 142, 0.3)",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            border: "1px solid rgba(182, 162, 142, 0.2)",
             "&:hover": {
                 backgroundColor: "rgba(182, 162, 142, 0.05)",
             }
         },
         footerActionLink: {
             color: "#B89B8A",
+            fontWeight: "600",
             "&:hover": {
-                color: "#D4C4B7",
+                color: "#A68A79",
             }
+        },
+        identityPreview: {
+            backgroundColor: "rgba(182, 162, 142, 0.05)",
+            border: "1px solid rgba(182, 162, 142, 0.1)",
         }
     }
 };

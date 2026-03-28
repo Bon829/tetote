@@ -1,12 +1,12 @@
-"use client";
-
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import "./mypage.css";
 
 export default function MyPage() {
+    const { user } = useUser();
     const bookings = useQuery(api.bookings.listMyBookings);
+    const userName = user?.firstName || user?.fullName || "お客様";
 
     const statusLabel = {
         pending: "確認中",
@@ -25,7 +25,7 @@ export default function MyPage() {
             <div className="mypage-header animate-slide-up">
                 <div className="mypage-user">
                     <UserButton />
-                    <h1 className="mypage-title">マイページ</h1>
+                    <h1 className="mypage-title">{userName} 様</h1>
                 </div>
                 <a href="/booking" className="btn-primary">新しく予約する</a>
             </div>
