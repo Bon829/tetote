@@ -28,7 +28,7 @@ export default defineSchema({
 
     // Admin settings for availability management
     availability_settings: defineTable({
-        // Weekly blocked days (0=Sun, 1=Mon, ..., 6=Sat)
+        // Weekly blocked days (0=Sun, 1=Mon, ..., 6=Sat) - Legacy, keeping for backwards compatibility or simple configs
         blockedDaysOfWeek: v.array(v.number()),
         // Individual blocked dates (YYYY-MM-DD)
         blockedDates: v.array(v.string()),
@@ -37,11 +37,23 @@ export default defineSchema({
             date: v.string(),
             time: v.string(),
         })),
-        // Lead time: cannot book within X hours of the appointment
+        // Booking lead time: cannot book within X hours of the appointment
         leadTimeHours: v.number(),
-        // Lead time: cannot book within X days in advance
+        // Booking lead time: cannot book within X days in advance
         leadTimeDays: v.number(),
         // Max days in advance a booking can be made
         maxAdvanceDays: v.number(),
+
+        // Cancel lead time: cannot cancel within X hours of appointment
+        cancelLeadTimeHours: v.optional(v.number()),
+        // Cancel lead time: cannot cancel within X days of appointment
+        cancelLeadTimeDays: v.optional(v.number()),
+        // Business Hours per day of week (0=Sun...6=Sat)
+        businessHours: v.optional(v.array(v.object({
+            dayOfWeek: v.number(),
+            isClosed: v.boolean(),
+            startTime: v.string(),
+            endTime: v.string(),
+        }))),
     }),
 });

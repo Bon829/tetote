@@ -56,7 +56,7 @@ export default function Home() {
       {/* Concept Section */}
       <section className="concept-section container text-center">
         <h2 className="section-title mb-4">CONCEPT</h2>
-        <h3 className="section-subtitle mb-8 text-serif">日常のなかに、ほっとできる場所を。</h3>
+        <h3 className="section-subtitle mb-8 text-serif">ほっとできる場所を。</h3>
         <p className="concept-text text-muted mb-8">
           tetoteは、「手（テ）と手（テ）をつなぐ」想いを大切に、<br className="pc-br" />
           お客様一人ひとりに丁寧に向き合うリンパドレナージュサロンです。<br className="pc-br" />

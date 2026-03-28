@@ -1,7 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-// Default settings for when no settings have been saved yet
 const DEFAULT_SETTINGS = {
     blockedDaysOfWeek: [] as number[],
     blockedDates: [] as string[],
@@ -9,6 +8,14 @@ const DEFAULT_SETTINGS = {
     leadTimeHours: 2,
     leadTimeDays: 0,
     maxAdvanceDays: 30,
+    cancelLeadTimeHours: 24,
+    cancelLeadTimeDays: 0,
+    businessHours: Array.from({ length: 7 }, (_, i) => ({
+        dayOfWeek: i,
+        isClosed: false,
+        startTime: "10:00",
+        endTime: "19:00",
+    })),
 };
 
 export const getSettings = query({
@@ -30,6 +37,14 @@ export const upsertSettings = mutation({
         leadTimeHours: v.number(),
         leadTimeDays: v.number(),
         maxAdvanceDays: v.number(),
+        cancelLeadTimeHours: v.optional(v.number()),
+        cancelLeadTimeDays: v.optional(v.number()),
+        businessHours: v.optional(v.array(v.object({
+            dayOfWeek: v.number(),
+            isClosed: v.boolean(),
+            startTime: v.string(),
+            endTime: v.string(),
+        }))),
     },
     handler: async (ctx, args) => {
         const existing = await ctx.db.query("availability_settings").first();
@@ -94,11 +109,13 @@ export const getAvailabilityGrid = query({
             grid[dateStr] = {};
 
             const dayOfWeek = dateObj.getDay(); // 0=Sun
+            const bh = cfg.businessHours?.find((b: any) => b.dayOfWeek === dayOfWeek);
 
             // Check if entire day is blocked
             const dayBlocked =
                 cfg.blockedDaysOfWeek.includes(dayOfWeek) ||
-                cfg.blockedDates.includes(dateStr);
+                cfg.blockedDates.includes(dateStr) ||
+                (bh && bh.isClosed);
 
             // Get all bookings for this date
             const dayBookings = await ctx.db
@@ -116,6 +133,17 @@ export const getAvailabilityGrid = query({
                 if (dayBlocked) {
                     grid[dateStr][time] = "blocked";
                     continue;
+                }
+
+                // Honor business hours range
+                if (bh && !bh.isClosed) {
+                    const slotTimeNum = parseInt(time.replace(":", ""), 10);
+                    const startNum = parseInt(bh.startTime.replace(":", ""), 10);
+                    const endNum = parseInt(bh.endTime.replace(":", ""), 10);
+                    if (slotTimeNum < startNum || slotTimeNum > endNum) {
+                        grid[dateStr][time] = "blocked";
+                        continue;
+                    }
                 }
 
                 // Check individual slot block

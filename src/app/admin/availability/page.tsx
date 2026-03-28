@@ -23,6 +23,20 @@ function getDateRange(days: number) {
     });
 }
 
+function cleanArgs(settings: any) {
+    return {
+        blockedDaysOfWeek: settings.blockedDaysOfWeek ?? [],
+        blockedDates: settings.blockedDates ?? [],
+        blockedSlots: settings.blockedSlots ?? [],
+        leadTimeHours: settings.leadTimeHours ?? 2,
+        leadTimeDays: settings.leadTimeDays ?? 0,
+        maxAdvanceDays: settings.maxAdvanceDays ?? 30,
+        cancelLeadTimeHours: settings.cancelLeadTimeHours,
+        cancelLeadTimeDays: settings.cancelLeadTimeDays,
+        businessHours: settings.businessHours,
+    };
+}
+
 export default function AvailabilityAdminPage() {
     const settings = useQuery(api.availability.getSettings);
     const upsertSettings = useMutation(api.availability.upsertSettings);
@@ -31,27 +45,49 @@ export default function AvailabilityAdminPage() {
     const [leadTimeValue, setLeadTimeValue] = useState<number | null>(null);
     const [leadTimeUnit, setLeadTimeUnit] = useState<"hours" | "days" | null>(null);
     const [maxAdvanceDays, setMaxAdvanceDays] = useState<number | null>(null);
+    
+    const [cancelLeadTimeValue, setCancelLeadTimeValue] = useState<number | null>(null);
+    const [cancelLeadTimeUnit, setCancelLeadTimeUnit] = useState<"hours" | "days" | null>(null);
+
+    const [localBH, setLocalBH] = useState<any[] | null>(null);
+
     const [saving, setSaving] = useState(false);
     const [saveMsg, setSaveMsg] = useState("");
 
+    const [savingBH, setSavingBH] = useState(false);
+    const [saveMsgBH, setSaveMsgBH] = useState("");
+
     const dates = useMemo(() => getDateRange(GRID_DAYS), []);
 
-    // Use settings values as defaults for form
-    // Map stored values to unified form state
     const effectiveUnit = leadTimeUnit ?? (settings?.leadTimeHours && settings.leadTimeHours > 0 ? "hours" : "days");
     const effectiveValue = leadTimeValue ?? (effectiveUnit === "hours" ? (settings?.leadTimeHours ?? 2) : (settings?.leadTimeDays ?? 1));
+    
+    const effectiveCancelUnit = cancelLeadTimeUnit ?? (settings?.cancelLeadTimeHours && settings.cancelLeadTimeHours > 0 ? "hours" : "days");
+    const effectiveCancelValue = cancelLeadTimeValue ?? (effectiveCancelUnit === "hours" ? (settings?.cancelLeadTimeHours ?? 24) : (settings?.cancelLeadTimeDays ?? 1));
+    
     const currentMaxDays = maxAdvanceDays ?? settings?.maxAdvanceDays ?? 30;
 
     const blockedDaysOfWeek = settings?.blockedDaysOfWeek ?? [];
     const blockedDates = settings?.blockedDates ?? [];
     const blockedSlots = settings?.blockedSlots ?? [];
+    
+    const defaultBH = Array.from({ length: 7 }, (_, i) => ({
+        dayOfWeek: i,
+        isClosed: false,
+        startTime: "10:00",
+        endTime: "19:00",
+    }));
+    const effectiveBH = localBH ?? settings?.businessHours ?? defaultBH;
 
-    const toggleDayOfWeek = async (dow: number) => {
-        if (!settings) return;
-        const current = blockedDaysOfWeek.includes(dow)
-            ? blockedDaysOfWeek.filter((d: number) => d !== dow)
-            : [...blockedDaysOfWeek, dow];
-        await upsertSettings({ ...settings, blockedDaysOfWeek: current });
+    const handleBHChange = (dow: number, field: string, value: any) => {
+        const newBH = [...effectiveBH];
+        const idx = newBH.findIndex((b: any) => b.dayOfWeek === dow);
+        if (idx >= 0) {
+            newBH[idx] = { ...newBH[idx], [field]: value };
+        } else {
+            newBH.push({ dayOfWeek: dow, isClosed: false, startTime: "10:00", endTime: "19:00", [field]: value });
+        }
+        setLocalBH(newBH);
     };
 
     const toggleBlockedDate = async (dateStr: string) => {
@@ -59,7 +95,7 @@ export default function AvailabilityAdminPage() {
         const current = blockedDates.includes(dateStr)
             ? blockedDates.filter((d: string) => d !== dateStr)
             : [...blockedDates, dateStr];
-        await upsertSettings({ ...settings, blockedDates: current });
+        await upsertSettings({ ...cleanArgs(settings), blockedDates: current });
     };
 
     const handleSaveLeadTime = async () => {
@@ -68,10 +104,12 @@ export default function AvailabilityAdminPage() {
         setSaveMsg("");
         try {
             await upsertSettings({
-                ...settings,
+                ...cleanArgs(settings),
                 leadTimeHours: effectiveUnit === "hours" ? effectiveValue : 0,
                 leadTimeDays: effectiveUnit === "days" ? effectiveValue : 0,
                 maxAdvanceDays: currentMaxDays,
+                cancelLeadTimeHours: effectiveCancelUnit === "hours" ? effectiveCancelValue : 0,
+                cancelLeadTimeDays: effectiveCancelUnit === "days" ? effectiveCancelValue : 0,
             });
             setSaveMsg("保存しました");
             setTimeout(() => setSaveMsg(""), 2000);
@@ -80,12 +118,30 @@ export default function AvailabilityAdminPage() {
         }
     };
 
+    const handleSaveBusinessHours = async () => {
+        if (!settings) return;
+        setSavingBH(true);
+        setSaveMsgBH("");
+        try {
+            await upsertSettings({
+                ...cleanArgs(settings),
+                businessHours: effectiveBH,
+            });
+            setSaveMsgBH("保存しました");
+            setTimeout(() => setSaveMsgBH(""), 2000);
+        } finally {
+            setSavingBH(false);
+        }
+    };
+
     const isSlotBlocked = (date: string, time: string) =>
         blockedSlots.some((s: { date: string; time: string }) => s.date === date && s.time === time);
 
     const isDateBlocked = (dateStr: string) => {
         const d = new Date(dateStr + "T00:00:00");
-        return blockedDates.includes(dateStr) || blockedDaysOfWeek.includes(d.getDay());
+        const dow = d.getDay();
+        const bh = effectiveBH.find((b: any) => b.dayOfWeek === dow) || defaultBH[dow];
+        return blockedDates.includes(dateStr) || blockedDaysOfWeek.includes(dow) || bh.isClosed;
     };
 
     return (
@@ -103,12 +159,12 @@ export default function AvailabilityAdminPage() {
                 <div className="admin-sections">
                     {/* Lead time / booking deadline settings */}
                     <section className="admin-card">
-                        <h2 className="admin-section-title">予約期限</h2>
-                        <p className="admin-section-desc">何日前 / 何時間前まで予約を受け付けるか設定します。</p>
+                        <h2 className="admin-section-title">予約期限・キャンセル期限</h2>
+                        <p className="admin-section-desc">予約を受け付ける期限と、マイページからキャンセルできる期限を設定します。</p>
 
                         <div className="admin-form-grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.2rem" }}>
                             <div className="admin-form-group">
-                                <label className="admin-label">予約期限</label>
+                                <label className="admin-label">予約期限（受付開始）</label>
                                 <div className="admin-number-input">
                                     <input
                                         type="number"
@@ -126,6 +182,27 @@ export default function AvailabilityAdminPage() {
                                     </select>
                                 </div>
                             </div>
+                            
+                            <div className="admin-form-group">
+                                <label className="admin-label">キャンセル期限（受付終了）</label>
+                                <div className="admin-number-input">
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        value={effectiveCancelValue}
+                                        onChange={(e) => setCancelLeadTimeValue(parseInt(e.target.value) || 0)}
+                                    />
+                                    <select
+                                        className="admin-unit-select"
+                                        value={effectiveCancelUnit}
+                                        onChange={(e) => setCancelLeadTimeUnit(e.target.value as "hours" | "days")}
+                                    >
+                                        <option value="days">日前</option>
+                                        <option value="hours">時間前</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div className="admin-form-group">
                                 <label className="admin-label">最大〇日先まで予約可能</label>
                                 <div className="admin-number-input">
@@ -150,21 +227,57 @@ export default function AvailabilityAdminPage() {
                         {saveMsg && <span className="admin-save-msg">{saveMsg}</span>}
                     </section>
 
-                    {/* Blocked days of week */}
+                    {/* Business Hours Settings */}
                     <section className="admin-card">
-                        <h2 className="admin-section-title">定期休業曜日</h2>
-                        <p className="admin-section-desc">選択した曜日は毎週×になります。</p>
-                        <div className="admin-dow-grid">
-                            {DAY_LABELS.map((label, dow) => (
-                                <button
-                                    key={dow}
-                                    onClick={() => toggleDayOfWeek(dow)}
-                                    className={`admin-dow-btn ${blockedDaysOfWeek.includes(dow) ? "blocked" : "open"} ${dow === 0 ? "sunday" : ""} ${dow === 6 ? "saturday" : ""}`}
-                                >
-                                    {label}
-                                </button>
-                            ))}
+                        <h2 className="admin-section-title">営業時間・休業日設定</h2>
+                        <p className="admin-section-desc">曜日ごとの休業日と、営業する時間帯を設定します。</p>
+                        <div className="admin-bh-list" style={{ marginTop: "1rem" }}>
+                            {DAY_LABELS.map((label, dow) => {
+                                const bh = effectiveBH.find((b: any) => b.dayOfWeek === dow) || defaultBH[dow];
+                                return (
+                                    <div key={dow} className={`admin-bh-row ${bh.isClosed ? "closed" : ""}`} style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem", padding: "0.5rem", borderBottom: "1px solid #efeae6" }}>
+                                        <div style={{ width: "40px", fontWeight: "bold", color: dow===0 ? "#d94848" : dow===6 ? "#4a86e8" : "inherit" }}>{label}</div>
+                                        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={bh.isClosed} 
+                                                onChange={(e) => handleBHChange(dow, "isClosed", e.target.checked)} 
+                                            />
+                                            休業
+                                        </label>
+                                        {!bh.isClosed && (
+                                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                                <select 
+                                                    value={bh.startTime} 
+                                                    onChange={(e) => handleBHChange(dow, "startTime", e.target.value)}
+                                                    className="admin-unit-select"
+                                                >
+                                                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                                                </select>
+                                                〜
+                                                <select 
+                                                    value={bh.endTime} 
+                                                    onChange={(e) => handleBHChange(dow, "endTime", e.target.value)}
+                                                    className="admin-unit-select"
+                                                >
+                                                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {bh.isClosed && <span className="text-muted" style={{ fontSize: "0.9rem" }}>お休み</span>}
+                                    </div>
+                                );
+                            })}
                         </div>
+                        <button
+                            className="admin-btn-primary"
+                            onClick={handleSaveBusinessHours}
+                            disabled={savingBH}
+                            style={{ marginTop: "1rem" }}
+                        >
+                            {savingBH ? "保存中..." : "営業時間設定を保存"}
+                        </button>
+                        {saveMsgBH && <span className="admin-save-msg">{saveMsgBH}</span>}
                     </section>
 
                     {/* Availability grid */}
@@ -195,7 +308,7 @@ export default function AvailabilityAdminPage() {
                                                     key={d}
                                                     className={`ag-date-header ${dayBlocked ? "day-blocked" : ""} ${dow === 6 ? "saturday" : ""} ${dow === 0 ? "sunday" : ""}`}
                                                     onClick={() => toggleBlockedDate(d)}
-                                                    title="クリックで休業日のトグル"
+                                                    title="クリックで1日まるごとトグル"
                                                 >
                                                     <span className="ag-date-mon">{m}/{day}</span>
                                                     <span className="ag-date-dow">{DAY_LABELS[dow]}</span>
@@ -211,14 +324,27 @@ export default function AvailabilityAdminPage() {
                                             {dates.map((date) => {
                                                 const dayBlocked = isDateBlocked(date);
                                                 const slotBlocked = isSlotBlocked(date, time);
+                                                
+                                                // Check if it's out of business hours bounds
+                                                const dObj = new Date(date + "T00:00:00");
+                                                const dow = dObj.getDay();
+                                                const bh = effectiveBH.find((b: any) => b.dayOfWeek === dow) || defaultBH[dow];
+                                                let outOfBounds = false;
+                                                if (!bh.isClosed) {
+                                                    const tNum = parseInt(time.replace(":", ""));
+                                                    const startNum = parseInt(bh.startTime.replace(":", ""));
+                                                    const endNum = parseInt(bh.endTime.replace(":", ""));
+                                                    outOfBounds = tNum < startNum || tNum > endNum;
+                                                }
+
                                                 return (
                                                     <td
                                                         key={date}
-                                                        className={`ag-cell ${dayBlocked ? "day-blocked" : slotBlocked ? "slot-blocked" : "open"}`}
-                                                        onClick={() => !dayBlocked && toggleSlot({ date, time })}
-                                                        title={dayBlocked ? "非営業日" : "クリックでトグル"}
+                                                        className={`ag-cell ${dayBlocked || outOfBounds ? "day-blocked" : slotBlocked ? "slot-blocked" : "open"}`}
+                                                        onClick={() => !(dayBlocked || outOfBounds) && toggleSlot({ date, time })}
+                                                        title={dayBlocked || outOfBounds ? "非予約枠" : "クリックでトグル"}
                                                     >
-                                                        {dayBlocked ? "×" : slotBlocked ? "×" : "○"}
+                                                        {dayBlocked || outOfBounds ? "×" : slotBlocked ? "×" : "○"}
                                                     </td>
                                                 );
                                             })}

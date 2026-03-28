@@ -99,6 +99,25 @@ export const cancelBooking = mutation({
         const booking = await ctx.db.get(args.bookingId);
         if (!booking) throw new Error("予約が見つかりません");
 
+        const settings = await ctx.db.query("availability_settings").first();
+        if (settings) {
+            const now = new Date();
+            const [hours, minutes] = booking.time.split(":").map(Number);
+            const slotDateTime = new Date(booking.date);
+            slotDateTime.setHours(hours, minutes, 0, 0);
+
+            const diffMs = slotDateTime.getTime() - now.getTime();
+            const diffHours = diffMs / (1000 * 60 * 60);
+            const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+            const limitHours = settings.cancelLeadTimeHours ?? 24;
+            const limitDays = settings.cancelLeadTimeDays ?? 0;
+
+            if (diffHours < limitHours || diffDays < limitDays) {
+                throw new Error("キャンセル可能期限を過ぎているため、マイページからのキャンセルはできません。直接店舗へご連絡ください。");
+            }
+        }
+
         await ctx.db.patch(args.bookingId, { status: "cancelled" });
     },
 });
