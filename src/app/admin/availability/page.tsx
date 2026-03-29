@@ -7,10 +7,10 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import "../admin.css";
 
-const TIME_SLOTS = [
-    "10:00", "11:00", "12:00", "13:00", "14:00",
-    "15:00", "16:00", "17:00", "18:00", "19:00",
-];
+const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
+    const padded = i.toString().padStart(2, "0");
+    return `${padded}:00`;
+});
 
 const DAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 const GRID_DAYS_TO_SHOW = 7; // Show 7 days at a time for better UX on mobile/admin
@@ -205,15 +205,20 @@ export default function AvailabilityAdminPage() {
     };
 
     const handleSaveSlots = async () => {
-        if (!localBlockedSlots) return;
+        if (!localBlockedSlots) {
+            console.warn("No changes to save in localBlockedSlots");
+            return;
+        }
         setSavingSlots(true);
         setSaveMsgSlots("");
         try {
+            console.log("Saving blocked slots:", localBlockedSlots);
             await upsertBlockedSlots({ blockedSlots: localBlockedSlots });
             setSaveMsgSlots("設定を保存しました");
             setTimeout(() => setSaveMsgSlots(""), 2000);
-        } catch (err) {
-            setSaveMsgSlots("エラーが発生しました");
+        } catch (err: any) {
+            console.error("Failed to save blocked slots:", err);
+            setSaveMsgSlots(`エラーが発生しました: ${err.message || ""}`);
         } finally {
             setSavingSlots(false);
         }
@@ -226,22 +231,37 @@ export default function AvailabilityAdminPage() {
     };
 
     const handlePrevWeek = () => {
-        const todayStr = new Date().toISOString().split("T")[0];
-        const d = new Date(currentGridStartDate + "T00:00:00");
-        d.setDate(d.getDate() - 7);
-        const nextStr = d.toISOString().split("T")[0];
-        if (nextStr >= todayStr) {
-            setCurrentGridStartDate(nextStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split("T")[0];
+        
+        const current = new Date(currentGridStartDate + "T00:00:00");
+        current.setDate(current.getDate() - 7);
+        const prevStr = current.toISOString().split("T")[0];
+        
+        if (prevStr >= todayStr) {
+            setCurrentGridStartDate(prevStr);
+        } else {
+            // Force it to today if going back would cross into the past
+            setCurrentGridStartDate(todayStr);
         }
     };
 
+
+    const isPast = (dateStr: string, timeStr: string) => {
+        const now = new Date();
+        const [hours, minutes] = timeStr.split(":").map(Number);
+        const slotDateTime = new Date(dateStr + "T00:00:00");
+        slotDateTime.setHours(hours, minutes, 0, 0);
+        return slotDateTime < now;
+    };
 
     const isDateBlocked = (dateStr: string) => {
         try {
             const d = new Date(dateStr + "T00:00:00");
             const dow = d.getDay();
             const bh = effectiveBH.find((b: any) => b.dayOfWeek === dow) || defaultBH[dow];
-            if (!bh) return true; // Should not happen with defaultBH fallback
+            if (!bh) return true;
             return (blockedDates?.includes(dateStr)) || (blockedDaysOfWeek?.includes(dow)) || bh.isClosed;
         } catch (e) {
             console.error("isDateBlocked error:", e);
@@ -454,14 +474,16 @@ export default function AvailabilityAdminPage() {
                                                     outOfBounds = tNum < startNum || tNum > endNum;
                                                 }
 
+                                                const past = isPast(date, time);
+                                                
                                                 return (
                                                     <td
                                                         key={date}
-                                                        className={`ag-cell ${dayBlocked || outOfBounds ? "day-blocked" : slotBlocked ? "slot-blocked" : "open"}`}
-                                                        onClick={() => !(dayBlocked || outOfBounds) && toggleLocalSlot(date, time)}
-                                                        title={dayBlocked || outOfBounds ? "非予約枠" : "クリックでトグル"}
+                                                        className={`ag-cell ${dayBlocked || outOfBounds || past ? "day-blocked" : slotBlocked ? "slot-blocked" : "open"}`}
+                                                        onClick={() => !(dayBlocked || outOfBounds || past) && toggleLocalSlot(date, time)}
+                                                        title={dayBlocked || outOfBounds ? "非予約枠" : past ? "過去の日付" : "クリックでトグル"}
                                                     >
-                                                        {dayBlocked || outOfBounds ? "×" : slotBlocked ? "×" : "○"}
+                                                        {dayBlocked || outOfBounds || past ? "×" : slotBlocked ? "×" : "○"}
                                                     </td>
                                                 );
                                             })}

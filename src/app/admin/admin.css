@@ -187,7 +187,7 @@
 
 .admin-grid {
     border-collapse: collapse;
-    min-width: 900px;
+    min-width: 500px;
     background: rgba(255,255,255,0.7);
     width: 100%;
 }
@@ -225,14 +225,14 @@
 }
 
 .ag-cell {
-    padding: 0.45rem 0.2rem;
+    padding: 0.4rem 0.1rem;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border-left: 1px solid rgba(182,162,142,0.1);
     border-bottom: 1px solid rgba(182,162,142,0.1);
     cursor: pointer;
     transition: background 0.1s;
-    min-width: 52px;
+    min-width: 40px;
 }
 
 .ag-cell.open { color: var(--color-primary); font-weight: 600; }
@@ -246,7 +246,13 @@
 }
 
 @media (max-width: 768px) {
-    .admin-outer { padding: 6rem 1rem 4rem; }
-    .admin-card { padding: 1.2rem; }
+    .admin-outer { padding: 6rem 0.5rem 4rem; }
+    .admin-card { padding: 1rem 0.8rem; }
     .admin-form-grid { grid-template-columns: 1fr; }
+    
+    .ag-date-header { min-width: 40px; padding: 0.3rem 0.1rem; }
+    .ag-date-mon { font-size: 0.7rem; }
+    .ag-date-dow { font-size: 0.6rem; }
+    .ag-time-label { font-size: 0.7rem; padding: 0.3rem 0.3rem; }
+    .ag-cell { min-width: 40px; font-size: 0.8rem; }
 }
