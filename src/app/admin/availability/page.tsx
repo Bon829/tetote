@@ -26,35 +26,34 @@ function getDateRange(startDate: string, days: number) {
 }
 
 function cleanArgs(settings: any) {
+    const s = settings || {};
     return {
-        blockedDaysOfWeek: settings.blockedDaysOfWeek ?? [],
-        blockedDates: settings.blockedDates ?? [],
-        blockedSlots: settings.blockedSlots ?? [],
-        leadTimeHours: settings.leadTimeHours ?? 2,
-        leadTimeDays: settings.leadTimeDays ?? 0,
-        maxAdvanceDays: settings.maxAdvanceDays ?? 30,
-        cancelLeadTimeHours: settings.cancelLeadTimeHours,
-        cancelLeadTimeDays: settings.cancelLeadTimeDays,
-        businessHours: settings.businessHours,
+        blockedDaysOfWeek: s.blockedDaysOfWeek ?? [],
+        blockedDates: s.blockedDates ?? [],
+        blockedSlots: s.blockedSlots ?? [],
+        leadTimeHours: s.leadTimeHours ?? 2,
+        leadTimeDays: s.leadTimeDays ?? 0,
+        maxAdvanceDays: s.maxAdvanceDays ?? 30,
+        cancelLeadTimeHours: s.cancelLeadTimeHours ?? 24,
+        cancelLeadTimeDays: s.cancelLeadTimeDays ?? 0,
+        businessHours: s.businessHours ?? [],
     };
 }
 
 export default function AvailabilityAdminPage() {
     const { user, isLoaded } = useUser();
     const router = useRouter();
-    const isAdmin = (user?.publicMetadata?.role === "admin") || ((user as any)?.metadata?.role === "admin");
+    // Improved admin check
+    const isAdmin = useMemo(() => {
+        if (!user) return false;
+        return (user.publicMetadata?.role === "admin") || ((user as any)?.metadata?.role === "admin");
+    }, [user]);
 
     useEffect(() => {
-        console.log("Admin Page - Role Check:", { 
-            isLoaded, 
-            publicRole: user?.publicMetadata?.role,
-            rawMetadataRole: (user as any)?.metadata?.role,
-            name: user?.fullName
-        });
-
         if (isLoaded) {
+            console.log("Admin Check:", { isAdmin, role: user?.publicMetadata?.role });
             if (!isAdmin) {
-                console.warn("User is not admin, redirecting to home...");
+                console.warn("Unauthorized access redirecting to home");
                 router.push("/");
             }
         }
@@ -90,12 +89,13 @@ export default function AvailabilityAdminPage() {
 
     const dates = useMemo(() => getDateRange(currentGridStartDate, GRID_DAYS_TO_SHOW), [currentGridStartDate]);
 
-    const availabilityGrid = useQuery(api.availability.getAvailabilityGrid, {
-        startDate: currentGridStartDate,
-        days: GRID_DAYS_TO_SHOW,
-        timeSlots: TIME_SLOTS,
-        isAdmin: true,
-    });
+    // const availabilityGrid = useQuery(api.availability.getAvailabilityGrid, {
+    //     startDate: currentGridStartDate,
+    //     days: GRID_DAYS_TO_SHOW,
+    //     timeSlots: TIME_SLOTS,
+    //     isAdmin: true,
+    // });
+    // Not using the heavy grid query in this screen, it's rendered manually from settings below.
 
     const upsertBlockedSlots = useMutation(api.availability.upsertBlockedSlots);
 
@@ -111,13 +111,30 @@ export default function AvailabilityAdminPage() {
     const blockedDates = settings?.blockedDates ?? [];
     const blockedSlots = localBlockedSlots ?? settings?.blockedSlots ?? [];
     
-    const defaultBH = Array.from({ length: 7 }, (_, i) => ({
+    const defaultBH = useMemo(() => Array.from({ length: 7 }, (_, i) => ({
         dayOfWeek: i,
         isClosed: false,
         startTime: "10:00",
         endTime: "19:00",
-    }));
-    const effectiveBH = localBH ?? settings?.businessHours ?? defaultBH;
+    })), []);
+
+    const effectiveBH = useMemo(() => {
+        if (localBH) return localBH;
+        if (settings?.businessHours && Array.isArray(settings.businessHours)) return settings.businessHours;
+        return defaultBH;
+    }, [localBH, settings, defaultBH]);
+    
+    // Safety check: Render nothing if not admin or not loaded
+    if (!isLoaded || (isLoaded && !isAdmin)) {
+        return (
+            <div className="admin-outer">
+                 <div className="admin-header">
+                    <p className="admin-subtitle">ADMIN</p>
+                    <h1 className="admin-title">読み込み中...</h1>
+                </div>
+            </div>
+        );
+    }
 
     const handleBHChange = (dow: number, field: string, value: any) => {
         const newBH = [...effectiveBH];
@@ -220,10 +237,16 @@ export default function AvailabilityAdminPage() {
 
 
     const isDateBlocked = (dateStr: string) => {
-        const d = new Date(dateStr + "T00:00:00");
-        const dow = d.getDay();
-        const bh = effectiveBH.find((b: any) => b.dayOfWeek === dow) || defaultBH[dow];
-        return blockedDates.includes(dateStr) || blockedDaysOfWeek.includes(dow) || bh.isClosed;
+        try {
+            const d = new Date(dateStr + "T00:00:00");
+            const dow = d.getDay();
+            const bh = effectiveBH.find((b: any) => b.dayOfWeek === dow) || defaultBH[dow];
+            if (!bh) return true; // Should not happen with defaultBH fallback
+            return (blockedDates?.includes(dateStr)) || (blockedDaysOfWeek?.includes(dow)) || bh.isClosed;
+        } catch (e) {
+            console.error("isDateBlocked error:", e);
+            return false;
+        }
     };
 
     return (
