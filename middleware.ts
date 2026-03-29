@@ -19,8 +19,12 @@ export default clerkMiddleware(async (auth, req) => {
     // 2. Extra role check for admin
     if (isAdminRoute(req)) {
         const authObj = await auth();
-        const role = (authObj.sessionClaims as any)?.publicMetadata?.role || (authObj.sessionClaims as any)?.metadata?.role;
+        // Check for role in both metadata and publicMetadata in session claims
+        const claims = authObj.sessionClaims as any;
+        const role = claims?.metadata?.role || claims?.publicMetadata?.role;
+        
         if (role !== "admin") {
+            // Redirect unauthorized users to home
             return NextResponse.redirect(new URL("/", req.url));
         }
     }

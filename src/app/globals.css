@@ -176,9 +176,6 @@ a {
 /* ─── Clerk UI overrides ───────────────────────────── */
 /* Hide "Secured by Clerk" and development mode banners */
 .cl-internal-b3fm6y,
-[data-localization-key="footerActionText"],
-.cl-footer,
-.cl-footerAction,
 .cl-internal-1dauvpf,
 .cl-developmentEnvironmentBanner,
 .cl-internal-b3al4t,

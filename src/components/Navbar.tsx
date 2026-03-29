@@ -12,7 +12,8 @@ export function Navbar() {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const isAdmin = user?.publicMetadata?.role === "admin";
+    const isAdmin = (user?.publicMetadata?.role === "admin") || ((user as any)?.metadata?.role === "admin");
+    console.log("Current User Role:", user?.publicMetadata?.role, (user as any)?.metadata?.role);
     const isActive = (href: string) => pathname === href;
     const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
 
