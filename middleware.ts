@@ -16,18 +16,8 @@ export default clerkMiddleware(async (auth, req) => {
         });
     }
 
-    // 2. Extra role check for admin
-    if (isAdminRoute(req)) {
-        const authObj = await auth();
-        // Check for role in both metadata and publicMetadata in session claims
-        const claims = authObj.sessionClaims as any;
-        const role = claims?.metadata?.role || claims?.publicMetadata?.role;
-        
-        if (role !== "admin") {
-            // Redirect unauthorized users to home
-            return NextResponse.redirect(new URL("/", req.url));
-        }
-    }
+    // 2. Role check for admin is now handled at the page level (client-side) 
+    // to ensure metadata is correctly accessed via useUser().
 });
 
 export const config = {

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import "../admin.css";
@@ -38,6 +40,16 @@ function cleanArgs(settings: any) {
 }
 
 export default function AvailabilityAdminPage() {
+    const { user, isLoaded } = useUser();
+    const router = useRouter();
+    const isAdmin = (user?.publicMetadata?.role === "admin") || ((user as any)?.metadata?.role === "admin");
+
+    useEffect(() => {
+        if (isLoaded && !isAdmin) {
+            router.push("/");
+        }
+    }, [isLoaded, isAdmin, router]);
+
     const settings = useQuery(api.availability.getSettings);
     const upsertSettings = useMutation(api.availability.upsertSettings);
     const toggleSlot = useMutation(api.availability.toggleBlockedSlot);

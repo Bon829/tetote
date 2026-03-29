@@ -18,8 +18,8 @@ const localization = {
             ...jaJP.signIn?.start,
             title: "サインイン",
             subtitle: "メールアドレスを入力してください",
-            actionText: "アカウントをお持ちでない方は",
-            actionLink: "アカウント登録はこちら",
+            actionText: "未登録の方は",
+            actionLink: "こちら",
         },
     },
     signUp: {
@@ -28,8 +28,8 @@ const localization = {
             ...jaJP.signUp?.start,
             title: "アカウント作成",
             subtitle: "必要事項を入力してください",
-            actionText: "既にアカウントをお持ちの方は",
-            actionLink: "ログインはこちら",
+            actionText: "登録済みの方",
+            actionLink: "こちら",
         },
     },
     unstable__errors: {

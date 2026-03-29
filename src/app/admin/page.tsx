@@ -1,9 +1,27 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import "./admin.css";
 
 export default function AdminDashboard() {
+    const { user, isLoaded } = useUser();
+    const router = useRouter();
+
+    const isAdmin = (user?.publicMetadata?.role === "admin") || ((user as any)?.metadata?.role === "admin");
+
+    useEffect(() => {
+        if (isLoaded && !isAdmin) {
+            router.push("/");
+        }
+    }, [isLoaded, isAdmin, router]);
+
+    if (!isLoaded || !isAdmin) {
+        return <div className="admin-outer"><p className="text-center admin-loading">読み込み中...</p></div>;
+    }
+
     return (
         <div className="admin-outer">
             <div className="admin-header">

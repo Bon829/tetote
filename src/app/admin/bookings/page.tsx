@@ -1,13 +1,24 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import "../admin.css";
 
 export default function AdminBookingsPage() {
-    // Note: Assuming there is a listAllBookings or similar in convex/bookings.ts
-    // If it's missing, it will show a message.
-    const bookings = useQuery(api.bookings.listMyBookings); // Fallback to listMyBookings for now if listAll is missing
+    const { user, isLoaded } = useUser();
+    const router = useRouter();
+    const isAdmin = (user?.publicMetadata?.role === "admin") || ((user as any)?.metadata?.role === "admin");
+
+    useEffect(() => {
+        if (isLoaded && !isAdmin) {
+            router.push("/");
+        }
+    }, [isLoaded, isAdmin, router]);
+
+    const bookings = useQuery(api.bookings.listMyBookings);
 
     return (
         <div className="admin-outer">
