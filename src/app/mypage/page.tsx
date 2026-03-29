@@ -13,6 +13,7 @@ export default function MyPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [showPast, setShowPast] = useState(false);
     const cancelBooking = useMutation(api.bookings.cancelBooking);
     const settings = useQuery(api.availability.getSettings);
 
@@ -72,6 +73,17 @@ export default function MyPage() {
         return diffHours >= limitHours && diffDays >= limitDays;
     };
 
+    const isPast = (b: any) => {
+        const now = new Date();
+        const [hours, minutes] = b.time.split(":").map(Number);
+        const slotDateTime = new Date(b.date + "T00:00:00");
+        slotDateTime.setHours(hours, minutes, 0, 0);
+        return slotDateTime < now;
+    };
+
+    const upcomingBookings = bookings?.filter(b => !isPast(b)) || [];
+    const pastBookings = bookings?.filter(b => isPast(b)) || [];
+
     return (
         <div className="mypage-outer">
             <div className="mypage-header animate-slide-up">
@@ -104,23 +116,37 @@ export default function MyPage() {
             </div>
 
             <div className="mypage-content animate-slide-up delay-300">
-                <h2 className="mypage-section-title">予約履歴</h2>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+                    <h2 className="mypage-section-title" style={{ margin: 0 }}>予約履歴</h2>
+                    {pastBookings.length > 0 && (
+                        <button 
+                            className={`btn-outline-sm ${showPast ? "active" : ""}`}
+                            onClick={() => setShowPast(!showPast)}
+                        >
+                            {showPast ? "今後の予約に戻す" : "過去の予約を表示"}
+                        </button>
+                    )}
+                </div>
 
                 {!bookings && (
                     <p className="text-muted">読み込み中...</p>
                 )}
 
-                {bookings && bookings.length === 0 && (
+                {bookings && (showPast ? pastBookings : upcomingBookings).length === 0 && (
                     <div className="mypage-empty glass-panel text-center">
-                        <p className="text-muted">まだご予約がありません。</p>
-                        <a href="/booking" className="btn-outline mt-8" style={{ display: "inline-block" }}>
-                            予約する
-                        </a>
+                        <p className="text-muted">
+                            {showPast ? "過去の予約はありません。" : "現在のご予約はありません。"}
+                        </p>
+                        {!showPast && (
+                            <a href="/booking" className="btn-outline mt-8" style={{ display: "inline-block" }}>
+                                予約する
+                            </a>
+                        )}
                     </div>
                 )}
 
                 <div className="booking-list">
-                    {bookings?.map((b) => {
+                    {(showPast ? pastBookings : upcomingBookings).map((b) => {
                         const cancellable = isCancellable(b);
                         return (
                             <div key={b._id} className="booking-item glass-panel">

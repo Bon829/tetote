@@ -16,6 +16,7 @@ export default function AdminBookingsPage() {
     const cancelBooking = useMutation(api.bookings.cancelBooking);
 
     const [filter, setFilter] = useState<"all"|"confirmed"|"cancelled">("all");
+    const [showPast, setShowPast] = useState(false);
 
     useEffect(() => {
         if (isLoaded && !isAdmin) {
@@ -27,9 +28,21 @@ export default function AdminBookingsPage() {
         return <div className="admin-outer"><p className="text-center admin-loading">読み込み中...</p></div>;
     }
 
+    const isPast = (b: any) => {
+        const now = new Date();
+        const [hours, minutes] = b.time.split(":").map(Number);
+        const slotDateTime = new Date(b.date + "T00:00:00");
+        slotDateTime.setHours(hours, minutes, 0, 0);
+        return slotDateTime < now;
+    };
+
     const filteredBookings = bookings?.filter(b => {
-        if (filter === "all") return true;
-        return b.status === filter;
+        // Status filter
+        if (filter !== "all" && b.status !== filter) return false;
+        // Past filter
+        const past = isPast(b);
+        if (showPast) return past; // Show only past
+        return !past; // Show only future/today
     });
 
     const statusLabel: Record<string, string> = {
@@ -46,26 +59,22 @@ export default function AdminBookingsPage() {
             </div>
 
             <div className="admin-sections">
-                <div className="admin-card glass-panel" style={{ marginBottom: "2rem" }}>
+                <div className="admin-card glass-panel" style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
                     <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-                        <span>表示フィルター:</span>
+                        <span style={{ fontSize: "0.9rem", color: "#666" }}>ステータス:</span>
+                        <div className="admin-filter-group">
+                            <button className={`btn-outline-sm ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>すべて</button>
+                            <button className={`btn-outline-sm ${filter === "confirmed" ? "active" : ""}`} onClick={() => setFilter("confirmed")}>確定</button>
+                            <button className={`btn-outline-sm ${filter === "cancelled" ? "active" : ""}`} onClick={() => setFilter("cancelled")}>取消</button>
+                        </div>
+                    </div>
+                    
+                    <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
                         <button 
-                            className={`btn-outline ${filter === "all" ? "active" : ""}`}
-                            onClick={() => setFilter("all")}
+                            className={`btn-outline-sm ${showPast ? "active" : ""}`}
+                            onClick={() => setShowPast(!showPast)}
                         >
-                            すべて
-                        </button>
-                        <button 
-                            className={`btn-outline ${filter === "confirmed" ? "active" : ""}`}
-                            onClick={() => setFilter("confirmed")}
-                        >
-                            確定のみ
-                        </button>
-                        <button 
-                            className={`btn-outline ${filter === "cancelled" ? "active" : ""}`}
-                            onClick={() => setFilter("cancelled")}
-                        >
-                            キャンセルのみ
+                            {showPast ? "今後の予約を表示" : "過去の予約を表示"}
                         </button>
                     </div>
                 </div>
@@ -74,135 +83,132 @@ export default function AdminBookingsPage() {
 
                 {bookings && filteredBookings?.length === 0 && (
                     <div className="admin-card text-center py-20">
-                        <p className="text-muted">該当する予約が見つかりませんでした。</p>
+                        <p className="text-muted">{showPast ? "過去の予約は見つかりませんでした。" : "該当する予約が見つかりませんでした。"}</p>
                     </div>
                 )}
 
-                <div className="admin-booking-grid">
-                    {filteredBookings?.map((b) => (
-                        <div key={b._id} className={`admin-booking-card glass-panel status-${b.status}`}>
-                            <div className="abc-header">
-                                <div className="abc-user">
-                                    <span className="abc-name">{b.user?.name} 様</span>
-                                    <span className="abc-email">{b.user?.email}</span>
-                                </div>
-                                <span className={`abc-status-badge status-${b.status}`}>
-                                    {statusLabel[b.status] || b.status}
-                                </span>
-                            </div>
-
-                            <div className="abc-details">
-                                <div className="abc-row">
-                                    <span className="label">施術内容:</span>
-                                    <span className="value">{b.menu?.title}</span>
-                                </div>
-                                <div className="abc-row">
-                                    <span className="label">予約日時:</span>
-                                    <span className="value" style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-                                        {b.date} {b.time}〜
-                                    </span>
-                                </div>
-                                <div className="abc-row">
-                                    <span className="label">所要時間:</span>
-                                    <span className="value">{b.totalDuration}分</span>
-                                </div>
-                                <div className="abc-row">
-                                    <span className="label">合計金額:</span>
-                                    <span className="value">¥{b.totalPrice?.toLocaleString()}</span>
-                                </div>
-                                {b.addons && b.addons.length > 0 && (
-                                    <div className="abc-addons">
-                                        追加: {b.addons.map((a: any) => a.title).join(", ")}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="abc-footer">
-                                <span className="abc-created">申込日: {new Date(b._creationTime).toLocaleDateString()}</span>
-                                {b.status === "confirmed" && (
-                                    <button 
-                                        className="btn-danger-sm"
-                                        onClick={async () => {
-                                            if (window.confirm("この予約を管理者権限でキャンセルしますか？")) {
-                                                await cancelBooking({ bookingId: b._id });
-                                            }
-                                        }}
-                                    >
-                                        キャンセル
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {bookings && filteredBookings && filteredBookings.length > 0 && (
+                    <div className="admin-card glass-panel" style={{ padding: 0, overflowX: "auto" }}>
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>日時</th>
+                                    <th>お客様名</th>
+                                    <th>メニュー</th>
+                                    <th>所要時間</th>
+                                    <th>金額</th>
+                                    <th>状態</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredBookings.map((b) => (
+                                    <tr key={b._id} className={`row-status-${b.status}`}>
+                                        <td className="cell-datetime">
+                                            <div style={{ fontWeight: "bold" }}>{b.date}</div>
+                                            <div style={{ fontSize: "0.85rem", color: "#666" }}>{b.time}〜</div>
+                                        </td>
+                                        <td className="cell-user">
+                                            <div style={{ fontWeight: "600" }}>{b.user?.name} 様</div>
+                                            <div style={{ fontSize: "0.75rem", color: "#999" }}>{b.user?.email}</div>
+                                        </td>
+                                        <td className="cell-menu">
+                                            <div style={{ fontSize: "0.9rem" }}>{b.menu?.title}</div>
+                                            {b.addons && b.addons.length > 0 && (
+                                                <div className="cell-addons">
+                                                    +{b.addons.map((a: any) => a.title).join(", ")}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="cell-duration">{b.totalDuration}分</td>
+                                        <td className="cell-price">¥{b.totalPrice?.toLocaleString()}</td>
+                                        <td className="cell-status">
+                                            <span className={`abc-status-badge status-${b.status}`}>
+                                                {statusLabel[b.status] || b.status}
+                                            </span>
+                                        </td>
+                                        <td className="cell-actions">
+                                            {b.status === "confirmed" && !isPast(b) && (
+                                                <button 
+                                                    className="btn-danger-xs"
+                                                    onClick={async () => {
+                                                        if (window.confirm("この予約をキャンセルしますか？")) {
+                                                            await cancelBooking({ bookingId: b._id });
+                                                        }
+                                                    }}
+                                                >
+                                                    取消
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             <style jsx>{`
-                .admin-booking-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-                    gap: 1.5rem;
-                }
-                .admin-booking-card {
-                    padding: 1.5rem;
-                    border-left: 4px solid #ccc;
-                    transition: all 0.3s ease;
-                }
-                .admin-booking-card.status-confirmed { border-left-color: #B89B8A; }
-                .admin-booking-card.status-cancelled { border-left-color: #d94848; opacity: 0.8; }
-                
-                .abc-header {
+                .admin-filter-group {
                     display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 1rem;
-                    border-bottom: 1px solid rgba(0,0,0,0.05);
-                    padding-bottom: 0.8rem;
+                    gap: 0.3rem;
+                    background: #f5f0ed;
+                    padding: 0.3rem;
+                    border-radius: 8px;
                 }
-                .abc-user { display: flex; flex-direction: column; }
-                .abc-name { font-weight: bold; font-size: 1.1rem; }
-                .abc-email { font-size: 0.8rem; color: #888; }
+                
+                .admin-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 0.9rem;
+                }
+                .admin-table th {
+                    text-align: left;
+                    padding: 1rem;
+                    background: #f9f7f5;
+                    color: #8a7b70;
+                    font-weight: 600;
+                    border-bottom: 2px solid #efeae6;
+                }
+                .admin-table td {
+                    padding: 1rem;
+                    border-bottom: 1px solid #efeae6;
+                    vertical-align: middle;
+                }
+                
+                .row-status-cancelled {
+                    opacity: 0.6;
+                    background: #fafafa;
+                }
+                
+                .cell-addons {
+                    font-size: 0.75rem;
+                    color: #9E9088;
+                    margin-top: 0.2rem;
+                }
                 
                 .abc-status-badge {
                     font-size: 0.75rem;
-                    padding: 0.25rem 0.6rem;
+                    padding: 0.2rem 0.5rem;
                     border-radius: 4px;
-                    background: #eee;
+                    white-space: nowrap;
                 }
                 .abc-status-badge.status-confirmed { background: #efeae6; color: #B89B8A; }
                 .abc-status-badge.status-cancelled { background: #fee2e2; color: #ef4444; }
 
-                .abc-details { margin-bottom: 1.2rem; }
-                .abc-row { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
-                .abc-row .label { color: #888; font-size: 0.9rem; }
-                
-                .abc-addons {
-                    margin-top: 0.5rem;
-                    font-size: 0.85rem;
-                    color: #9E9088;
-                    font-style: italic;
-                }
-
-                .abc-footer {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    font-size: 0.8rem;
-                    color: #aaa;
-                }
-
-                .btn-danger-sm {
+                .btn-danger-xs {
                    background: #fee2e2;
                    color: #ef4444;
                    border: none;
-                   padding: 0.3rem 0.8rem;
+                   padding: 0.2rem 0.5rem;
                    border-radius: 4px;
                    cursor: pointer;
-                   font-size: 0.85rem;
+                   font-size: 0.75rem;
                 }
-                .btn-danger-sm:hover { background: #fecaca; }
+                .btn-danger-xs:hover { background: #fecaca; }
 
-                .btn-outline.active {
+                .btn-outline-sm.active {
                     background: var(--color-primary);
                     color: white;
                     border-color: var(--color-primary);

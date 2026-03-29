@@ -45,10 +45,20 @@ export default function AvailabilityAdminPage() {
     const isAdmin = (user?.publicMetadata?.role === "admin") || ((user as any)?.metadata?.role === "admin");
 
     useEffect(() => {
-        if (isLoaded && !isAdmin) {
-            router.push("/");
+        console.log("Admin Page - Role Check:", { 
+            isLoaded, 
+            publicRole: user?.publicMetadata?.role,
+            rawMetadataRole: (user as any)?.metadata?.role,
+            name: user?.fullName
+        });
+
+        if (isLoaded) {
+            if (!isAdmin) {
+                console.warn("User is not admin, redirecting to home...");
+                router.push("/");
+            }
         }
-    }, [isLoaded, isAdmin, router]);
+    }, [isLoaded, isAdmin, router, user]);
 
     const settings = useQuery(api.availability.getSettings);
     const upsertSettings = useMutation(api.availability.upsertSettings);

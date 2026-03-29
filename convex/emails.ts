@@ -15,7 +15,8 @@ export const sendBookingConfirmation = action({
     },
     handler: async (ctx, args) => {
         try {
-            await resend.emails.send({
+            console.log("Resend Request - sendBookingConfirmation:", { to: args.to, menuTitle: args.menuTitle });
+            const response = await resend.emails.send({
                 from: "tetote <onboarding@resend.dev>", // Replace with your domain when ready
                 to: args.to,
                 subject: "【tetote】ご予約ありがとうございます",
@@ -36,10 +37,11 @@ export const sendBookingConfirmation = action({
                     </div>
                 `,
             });
-            return { success: true };
-        } catch (error) {
+            console.log("Resend Response:", response);
+            return { success: true, response };
+        } catch (error: any) {
             console.error("Resend error:", error);
-            return { success: false, error };
+            return { success: false, error: String(error) };
         }
     },
 });
