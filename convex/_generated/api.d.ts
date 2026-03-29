@@ -10,6 +10,7 @@
 
 import type * as availability from "../availability.js";
 import type * as bookings from "../bookings.js";
+import type * as emails from "../emails.js";
 import type * as menus from "../menus.js";
 import type * as seed from "../seed.js";
 
@@ -22,6 +23,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   availability: typeof availability;
   bookings: typeof bookings;
+  emails: typeof emails;
   menus: typeof menus;
   seed: typeof seed;
 }>;
