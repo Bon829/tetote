@@ -54,6 +54,24 @@ export default function MyPage() {
         cancelled: "status-cancelled",
     };
 
+    const isCancellable = (b: any) => {
+        if (b.status !== "confirmed" || !settings) return false;
+        
+        const now = new Date();
+        const [hours, minutes] = b.time.split(":").map(Number);
+        const slotDateTime = new Date(b.date + "T00:00:00");
+        slotDateTime.setHours(hours, minutes, 0, 0);
+
+        const diffMs = slotDateTime.getTime() - now.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+        const limitHours = settings.cancelLeadTimeHours ?? 24;
+        const limitDays = settings.cancelLeadTimeDays ?? 0;
+
+        return diffHours >= limitHours && diffDays >= limitDays;
+    };
+
     return (
         <div className="mypage-outer">
             <div className="mypage-header animate-slide-up">
@@ -102,46 +120,52 @@ export default function MyPage() {
                 )}
 
                 <div className="booking-list">
-                    {bookings?.map((b) => (
-                        <div key={b._id} className="booking-item glass-panel">
-                            <div className="booking-item-header">
-                                <h3 className="booking-menu-name">{b.menu?.title ?? "メニュー"}</h3>
-                                <span className={`status-badge ${statusClass[b.status]}`}>
-                                    {statusLabel[b.status]}
-                                </span>
-                            </div>
-                            <div className="booking-item-details">
-                                <span>📅 {b.date}</span>
-                                <span>🕐 {b.time}〜</span>
-                                <span>🕒 {b.totalDuration ?? b.menu?.durationMinutes}分</span>
-                                <span>¥{(b.totalPrice ?? b.menu?.price)?.toLocaleString()}</span>
-                            </div>
-                            {b.addons && b.addons.length > 0 && (
-                                <div className="booking-item-addons" style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
-                                    追加: {b.addons.map((a: any) => a.title).join("・")}
+                    {bookings?.map((b) => {
+                        const cancellable = isCancellable(b);
+                        return (
+                            <div key={b._id} className="booking-item glass-panel">
+                                <div className="booking-item-header">
+                                    <h3 className="booking-menu-name">{b.menu?.title ?? "メニュー"}</h3>
+                                    {/* キャンセル可能な場合は「確定済み」バッジを隠す */}
+                                    {(!cancellable || b.status !== "confirmed") && (
+                                        <span className={`status-badge ${statusClass[b.status]}`}>
+                                            {statusLabel[b.status]}
+                                        </span>
+                                    )}
                                 </div>
-                            )}
-                            {b.status === "confirmed" && (
-                                <div className="booking-item-actions" style={{ marginTop: "1rem" }}>
-                                    <button 
-                                        className="btn-outline-danger"
-                                        onClick={async () => {
-                                            if (window.confirm("この予約をキャンセルしてもよろしいですか？")) {
-                                                try {
-                                                    await cancelBooking({ bookingId: b._id });
-                                                    alert("キャンセルが完了しました。");
-                                                } catch (err: any) {
-                                                    alert(err.message || "キャンセルの実行に失敗しました。");
+                                <div className="booking-item-details">
+                                    <span>📅 {b.date}</span>
+                                    <span>🕐 {b.time}〜</span>
+                                    <span>🕒 {b.totalDuration ?? b.menu?.durationMinutes}分</span>
+                                    <span>¥{(b.totalPrice ?? b.menu?.price)?.toLocaleString()}</span>
+                                </div>
+                                {b.addons && b.addons.length > 0 && (
+                                    <div className="booking-item-addons" style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+                                        追加: {b.addons.map((a: any) => a.title).join("・")}
+                                    </div>
+                                )}
+                                {cancellable && (
+                                    <div className="booking-item-actions" style={{ marginTop: "1rem" }}>
+                                        <button 
+                                            className="btn-outline-danger"
+                                            onClick={async () => {
+                                                if (window.confirm("この予約をキャンセルしてもよろしいですか？")) {
+                                                    try {
+                                                        await cancelBooking({ bookingId: b._id });
+                                                        alert("キャンセルが完了しました。");
+                                                    } catch (err: any) {
+                                                        alert(err.message || "キャンセルの実行に失敗しました。");
+                                                    }
                                                 }
-                                            }
-                                        }}
-                                    >
-                                        キャンセルする
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                                            }}
+                                        >
+                                            キャンセルする
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
