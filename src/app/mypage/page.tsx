@@ -3,11 +3,41 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
 import "./mypage.css";
 
 export default function MyPage() {
-    const { user } = useUser();
+    const { user, isLoaded } = useUser();
     const bookings = useQuery(api.bookings.listMyBookings);
+    
+    const [isEditing, setIsEditing] = useState(false);
+    const [newName, setNewName] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            setNewName(user.firstName || user.fullName || "");
+        }
+    }, [user]);
+
+    const handleUpdateName = async () => {
+        if (!user || !newName.trim() || isSaving) return;
+        setIsSaving(true);
+        try {
+            await user.update({
+                firstName: newName.trim(),
+            });
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Failed to update name:", err);
+            alert("名前の更新に失敗しました。");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (!isLoaded) return <div className="mypage-outer"><p className="text-center">読み込み中...</p></div>;
+
     const userName = user?.firstName || user?.fullName || "お客様";
 
     const statusLabel = {
@@ -27,7 +57,28 @@ export default function MyPage() {
             <div className="mypage-header animate-slide-up">
                 <div className="mypage-user">
                     <UserButton />
-                    <h1 className="mypage-title">{userName} 様</h1>
+                    {isEditing ? (
+                        <div className="mypage-edit-form">
+                            <input
+                                type="text"
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                className="mypage-name-input"
+                                autoFocus
+                            />
+                            <div className="mypage-edit-actions">
+                                <button onClick={handleUpdateName} disabled={isSaving} className="btn-save">
+                                    {isSaving ? "保存中..." : "保存"}
+                                </button>
+                                <button onClick={() => setIsEditing(false)} className="btn-cancel">取消</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="mypage-user-info">
+                            <h1 className="mypage-title">{userName} 様</h1>
+                            <button onClick={() => setIsEditing(true)} className="btn-edit-name">✎ 変更</button>
+                        </div>
+                    )}
                 </div>
                 <a href="/booking" className="btn-primary">新しく予約する</a>
             </div>

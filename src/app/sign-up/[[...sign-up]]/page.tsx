@@ -7,7 +7,7 @@ export default function SignUpPage() {
             <div className="auth-card-wrap animate-slide-up">
                 <SignUp 
                     routing="path" 
-                    path="/sign-up" 
+                    path="/sign-up"
                     signInUrl="/sign-in"
                 />
             </div>

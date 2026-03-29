@@ -9,67 +9,58 @@ import { jaJP } from "@clerk/localizations";
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder-url.convex.cloud";
 const convex = new ConvexReactClient(convexUrl);
 
-// Override localization for unified auth flow
+// Override localization for unified auth flow fallback
 const localization = {
     ...jaJP,
     signIn: {
         ...jaJP.signIn,
         start: {
             ...jaJP.signIn?.start,
-            title: "",
-            subtitle: "",
+            title: "ログイン・新規登録",
+            subtitle: "ご利用のメールアドレスでログインできます",
         },
     },
     signUp: {
         ...jaJP.signUp,
         start: {
             ...jaJP.signUp?.start,
-            title: "",
-            subtitle: "",
+            title: "アカウントを作成",
+            subtitle: "情報を入力してご登録ください",
         },
     },
+    unstable__errors: {
+        ...jaJP.unstable__errors,
+        form_identifier_not_found: 'アカウントが見つかりません。下部リンクの『アカウントを持たない場合』から新規登録へお進みください。',
+    }
 };
 
 const appearance = {
     variables: {
         colorPrimary: "#B89B8A",
-        colorBackground: "#FAF9F7",
-        colorText: "#3A3028",
-        colorTextSecondary: "#9E9088",
+        colorBackground: "#181a1b",
+        colorText: "#e8e6e3",
+        colorTextSecondary: "#a0a0a0",
+        colorInputBackground: "#242526",
+        colorInputText: "#e8e6e3",
         fontFamily: "var(--font-sans), sans-serif",
         borderRadius: "8px",
     },
     elements: {
         card: {
-            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.4)",
-            background: "rgba(255, 255, 255, 0.7)",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            background: "rgba(24, 26, 27, 0.8)",
             backdropFilter: "blur(20px)",
             padding: "2.5rem 2rem",
         },
-        // Hide the application title/header
         headerTitle: {
-            display: "none",
+            fontFamily: "var(--font-serif), serif",
+            color: "#e8e6e3",
         },
         headerSubtitle: {
-            display: "none",
+            color: "#a0a0a0",
         },
         logoBox: {
-            display: "none",
-        },
-        // Remove 'Sign In / Sign Up' switcher text and links
-        footer: {
-            display: "none",
-        },
-        footerAction: {
-            display: "none",
-        },
-        // Hide "Previously used" / alternative methods
-        alternativeMethods: {
-            display: "none",
-        },
-        // Hide divider and sub-text
-        dividerRow: {
             display: "none",
         },
         formButtonPrimary: {
@@ -77,6 +68,7 @@ const appearance = {
             fontSize: "1rem",
             letterSpacing: "0.15em",
             backgroundColor: "#B89B8A",
+            color: "#fff",
             textTransform: "uppercase",
             height: "3.2rem",
             boxShadow: "0 10px 25px -5px rgba(184, 155, 138, 0.4)",
@@ -87,18 +79,20 @@ const appearance = {
             }
         },
         formFieldInput: {
-            backgroundColor: "rgba(255, 255, 255, 0.6)",
-            border: "1px solid rgba(182, 162, 142, 0.2)",
+            backgroundColor: "rgba(36, 37, 38, 0.9)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            color: "#e8e6e3",
             "&:focus": {
                 border: "1px solid #B89B8A",
-                boxShadow: "0 0 0 2px rgba(184, 155, 138, 0.1)",
+                boxShadow: "0 0 0 2px rgba(184, 155, 138, 0.2)",
             }
         },
         socialButtonsBlockButton: {
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            border: "1px solid rgba(182, 162, 142, 0.2)",
+            backgroundColor: "rgba(36, 37, 38, 0.7)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            color: "#e8e6e3",
             "&:hover": {
-                backgroundColor: "rgba(182, 162, 142, 0.05)",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
             }
         },
         footerActionLink: {
@@ -109,8 +103,9 @@ const appearance = {
             }
         },
         identityPreview: {
-            backgroundColor: "rgba(182, 162, 142, 0.05)",
-            border: "1px solid rgba(182, 162, 142, 0.1)",
+            backgroundColor: "rgba(36, 37, 38, 0.9)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            color: "#e8e6e3"
         }
     }
 };

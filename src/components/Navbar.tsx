@@ -21,12 +21,10 @@ export function Navbar() {
     return (
         <nav className="navbar">
             <div className="navbar-brand">
-                {!isAuthPage && (
-                    <Link href="/" onClick={closeMenu}>
-                        <span className="navbar-logo-label">lymph drainage</span>
-                        <span className="navbar-logo-name">tetote</span>
-                    </Link>
-                )}
+                <Link href="/" onClick={closeMenu}>
+                    <span className="navbar-logo-label">lymph drainage</span>
+                    <span className="navbar-logo-name">tetote</span>
+                </Link>
             </div>
             <div className={`navbar-toggle ${isMenuOpen ? "open" : ""}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 <span></span><span></span><span></span>

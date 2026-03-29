@@ -1,7 +1,7 @@
 .mypage-outer {
     min-height: 100vh;
     padding: 8rem 5% 4rem;
-    background: linear-gradient(135deg, #FAF9F8 0%, #EDE9E4 100%);
+    background: linear-gradient(135deg, #181a1b 0%, #242526 100%);
 }
 
 .mypage-header {
@@ -108,3 +108,67 @@
         gap: 0.5rem;
     }
 }
+
+.mypage-user-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.btn-edit-name {
+    background: none;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: all 0.2s;
+}
+
+.btn-edit-name:hover {
+    opacity: 1;
+    background: rgba(184, 155, 138, 0.1);
+}
+
+.mypage-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.mypage-name-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-primary);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    width: 250px;
+}
+
+.mypage-edit-actions {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.btn-save {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    padding: 0.4rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-cancel {
+    background: none;
+    border: 1px solid #a0a0a0;
+    color: #a0a0a0;
+    padding: 0.4rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}

@@ -1,0 +1,293 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useSignIn, useSignUp, useAuth, useClerk } from "@clerk/nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
+import "../../auth.css";
+
+export default function UnifiedAuthPage() {
+    const { isLoaded: isAuthLoaded } = useAuth();
+    const { signIn } = useSignIn();
+    const { signUp } = useSignUp();
+    const { setActive } = useClerk();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [code, setCode] = useState("");
+
+    const [step, setStep] = useState<"email" | "password-login" | "verify-code" | "signup-details">("email");
+    const [errorMsg, setErrorMsg] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Sync email from searchParams if provided (for redirects from booking)
+    useEffect(() => {
+        const e = searchParams.get("email");
+        if (e) setEmail(e);
+    }, [searchParams]);
+
+    if (!isAuthLoaded || !signIn || !signUp) return null;
+
+    // SSO Handler using Signal API sso()
+    const handleGoogleLogin = async () => {
+        setIsLoading(true);
+        try {
+            await signIn.sso({
+                strategy: "oauth_google",
+                redirectUrl: "/sign-in",
+                redirectCallbackUrl: searchParams.get("redirect_url") || "/",
+            });
+        } catch (err: any) {
+            setErrorMsg("Googleログインに失敗しました");
+            setIsLoading(false);
+        }
+    };
+
+    // Step 1: Submit Email (Identify existing vs new)
+    const handleEmailSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrorMsg("");
+        setIsLoading(true);
+
+        try {
+            // Check if user exists by attempting sign-in create
+            const res = await signIn.create({ identifier: email });
+            
+            if (res.error) {
+                // If user not found, transition to sign-up (Auto-fill email)
+                if (res.error.code === "form_identifier_not_found") {
+                    const signUpRes = await signUp.create({ emailAddress: email });
+                    if (signUpRes.error) {
+                        setErrorMsg(signUpRes.error.message);
+                    } else {
+                        await signUp.verifications.sendEmailCode();
+                        setStep("verify-code");
+                    }
+                } else {
+                    setErrorMsg(res.error.message);
+                }
+            } else {
+                if (signIn.status === "needs_first_factor") {
+                    setStep("password-login");
+                } else if (signIn.status === "complete") {
+                    if (setActive) await setActive({ session: signIn.createdSessionId });
+                    router.push(searchParams.get("redirect_url") || "/");
+                }
+            }
+        } catch (err: any) {
+            setErrorMsg("エラーが発生しました。時間を置いて再度お試しください。");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Step 2 (Existing User): Password Login
+    const handlePasswordLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrorMsg("");
+        setIsLoading(true);
+
+        try {
+            const res = await signIn.password({ password });
+            if (res.error) {
+                setErrorMsg(res.error.message);
+            } else if (signIn.status === "complete") {
+                if (setActive) await setActive({ session: signIn.createdSessionId });
+                router.push(searchParams.get("redirect_url") || "/");
+            } else {
+                setErrorMsg("ご本人確認を完了できませんでした");
+            }
+        } catch (err: any) {
+            setErrorMsg("エラーが発生しました");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Step 3 (New User): Verify Email Code
+    const handleVerifyCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrorMsg("");
+        setIsLoading(true);
+
+        try {
+            const res = await signUp.verifications.verifyEmailCode({ code });
+            if (res.error) {
+                setErrorMsg(res.error.message);
+            } else if (signUp.status === "missing_requirements") {
+                setStep("signup-details");
+            } else if (signUp.status === "complete") {
+                if (setActive) await setActive({ session: signUp.createdSessionId });
+                router.push(searchParams.get("redirect_url") || "/");
+            }
+        } catch (err: any) {
+            setErrorMsg("エラーが発生しました");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Step 4 (New User): Finalize Sign-up
+    const handleSignupDetails = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrorMsg("");
+        setIsLoading(true);
+
+        try {
+            await signUp.update({ firstName, lastName });
+            const res = await signUp.password({ password });
+
+            if (res.error) {
+                setErrorMsg(res.error.message);
+            } else if (signUp.status === "complete") {
+                if (setActive) await setActive({ session: signUp.createdSessionId });
+                router.push(searchParams.get("redirect_url") || "/");
+            } else {
+                setErrorMsg("登録を完了できませんでした。項目をご確認ください。");
+            }
+        } catch (err: any) {
+            setErrorMsg("エラーが発生しました");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="auth-outer">
+            <div className="auth-card-wrap">
+                <div className="auth-card glass-panel animate-fade-in shadow-xl rounded-xl p-8 bg-white/90 backdrop-blur-md">
+                    <div className="auth-brand text-center mb-6">
+                        <p className="text-xs tracking-widest uppercase text-muted mb-1 font-serif">lymph drainage</p>
+                        <h1 className="text-3xl font-serif text-dark tracking-wide">tetote</h1>
+                    </div>
+
+                    {errorMsg && (
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 text-center border border-red-100 animate-shake">
+                            {errorMsg}
+                        </div>
+                    )}
+
+                    {step === "email" && (
+                        <div>
+                            <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all font-medium mb-6">
+                                <svg width="18" height="18" viewBox="0 0 18 18">
+                                    <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.49h4.84a4.14 4.14 0 0 1-1.8 2.71v2.26h2.91a8.78 8.78 0 0 0 2.69-6.62z"/>
+                                    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.8.54-1.83.86-3.05.86-2.34 0-4.32-1.58-5.03-3.71H1.03v2.33A8.997 8.997 0 0 0 9 18z"/>
+                                    <path fill="#FBBC05" d="M3.97 10.71c-.18-.54-.28-1.12-.28-1.71s.1-1.17.28-1.71V4.96H1.03a8.997 8.997 0 0 0 0 8.08l2.94-2.33z"/>
+                                    <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.958 8.958 0 0 0 9 0a8.997 8.997 0 0 0-7.97 4.96L3.97 7.29c.71-2.13 2.69-3.71 5.03-3.71z"/>
+                                </svg>
+                                Googleで続ける
+                            </button>
+
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="flex-1 h-px bg-gray-200"></div>
+                                <span className="text-xs text-gray-400 font-medium">または</span>
+                                <div className="flex-1 h-px bg-gray-200"></div>
+                            </div>
+
+                            <form onSubmit={handleEmailSubmit}>
+                                <label className="block text-sm font-medium text-gray-600 mb-1">メールアドレス</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                                    placeholder="name@example.com"
+                                    required
+                                    autoFocus
+                                />
+                                <button type="submit" disabled={isLoading} className="w-full bg-dark text-white py-3 rounded-lg mt-6 font-medium hover:opacity-90 disabled:opacity-50 transition-all font-sans">
+                                    {isLoading ? "確認中..." : "次へ"}
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    {step === "password-login" && (
+                        <form onSubmit={handlePasswordLogin}>
+                            <p className="text-sm text-gray-500 mb-4 text-center font-sans">パスワードを入力してください ({email})</p>
+                            <label className="block text-sm font-medium text-gray-600 mb-1 font-sans">パスワード</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                                required
+                                autoFocus
+                            />
+                            <button type="submit" disabled={isLoading} className="w-full bg-dark text-white py-3 rounded-lg mt-6 font-medium hover:opacity-90 disabled:opacity-50 transition-all font-sans">
+                                {isLoading ? "ログイン中..." : "ログイン"}
+                            </button>
+                            <button type="button" onClick={() => setStep("email")} className="w-full text-sm text-gray-400 font-medium hover:text-gray-600 transition-colors mt-4 font-sans">
+                                別のアドレスを使用する
+                            </button>
+                        </form>
+                    )}
+
+                    {step === "verify-code" && (
+                        <form onSubmit={handleVerifyCode}>
+                            <p className="text-sm text-gray-500 mb-4 text-center font-sans">確認コードを送信しました。メールをご確認ください。 ({email})</p>
+                            <label className="block text-sm font-medium text-gray-600 mb-1 font-sans">確認コード</label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-center tracking-[0.5em] text-xl font-bold font-sans"
+                                placeholder="123456"
+                                required
+                                autoFocus
+                            />
+                            <button type="submit" disabled={isLoading} className="w-full bg-dark text-white py-3 rounded-lg mt-6 font-medium hover:opacity-90 disabled:opacity-50 transition-all font-sans">
+                                {isLoading ? "確認中..." : "次へ"}
+                            </button>
+                        </form>
+                    )}
+
+                    {step === "signup-details" && (
+                        <form onSubmit={handleSignupDetails}>
+                            <p className="text-sm text-gray-500 mb-6 text-center font-sans">最後にお名前とパスワードを設定してください。</p>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-1 font-sans">姓</label>
+                                    <input
+                                        type="text"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-1 font-sans">名</label>
+                                    <input
+                                        type="text"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <label className="block text-sm font-medium text-gray-600 mb-1 font-sans">パスワード (8文字以上)</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                                minLength={8}
+                                required
+                            />
+                            <button type="submit" disabled={isLoading} className="w-full bg-dark text-white py-3 rounded-lg mt-8 font-medium hover:opacity-90 disabled:opacity-50 transition-all font-sans">
+                                {isLoading ? "登録中..." : "登録を完了する"}
+                            </button>
+                        </form>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

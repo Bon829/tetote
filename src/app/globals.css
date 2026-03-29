@@ -1,11 +1,11 @@
 :root {
   --color-primary: #B89B8A;
   --color-primary-light: #D4C4B7;
-  --color-bg-light: #FAF9F7;
-  --color-bg-dark: #3A3028;
-  --color-text: #5A4E44;
-  --color-text-muted: #9E9088;
-  --color-surface: rgba(255, 255, 255, 0.85);
+  --color-bg-light: #181a1b;
+  --color-bg-dark: #242526;
+  --color-text: #e8e6e3;
+  --color-text-muted: #a0a0a0;
+  --color-surface: rgba(24, 26, 27, 0.8);
 
   --font-serif: var(--font-serif-en), var(--font-serif-jp), serif;
   --font-sans: var(--font-sans-jp), sans-serif;
@@ -37,7 +37,7 @@ h5,
 h6 {
   font-family: var(--font-serif);
   font-weight: 300;
-  color: var(--color-bg-dark);
+  color: var(--color-text);
   line-height: 1.4;
   letter-spacing: 0.05em;
 }
@@ -167,8 +167,8 @@ a {
   background: var(--color-surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   padding: 3rem;
 }
