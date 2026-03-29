@@ -1,6 +1,6 @@
 .admin-outer {
     min-height: 100vh;
-    background: #181a1b;
+    background: #C9B5A6;
     padding: 7rem 5% 4rem;
 }
 
@@ -36,11 +36,10 @@
 }
 
 .admin-card {
-    background: var(--color-surface);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.85);
     border-radius: 12px;
     padding: 1.8rem 2rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 .admin-section-title {
@@ -84,12 +83,12 @@
 .admin-number-input input {
     width: 80px;
     padding: 0.5rem 0.8rem;
-    border: 1px solid rgba(184, 155, 138, 0.3);
+    border: 1px solid rgba(182, 162, 142, 0.4);
     border-radius: 6px;
     font-size: 1rem;
     font-family: var(--font-serif);
-    background: #242526;
-    color: #e8e6e3;
+    background: white;
+    color: var(--color-bg-dark);
 }
 
 .admin-number-input span {
@@ -99,12 +98,12 @@
 
 .admin-unit-select {
     padding: 0.5rem 0.6rem;
-    border: 1px solid rgba(184, 155, 138, 0.3);
+    border: 1px solid rgba(182, 162, 142, 0.4);
     border-radius: 6px;
     font-size: 0.9rem;
     font-family: var(--font-sans-jp);
-    background: #242526;
-    color: #e8e6e3;
+    background: white;
+    color: var(--color-bg-dark);
     cursor: pointer;
 }
 
@@ -153,9 +152,8 @@
 }
 
 .admin-dow-btn.open {
-    background: #242526;
-    color: #e8e6e3;
-    border-color: var(--color-primary);
+    background: white;
+    color: var(--color-bg-dark);
 }
 
 .admin-dow-btn.blocked {
@@ -190,7 +188,7 @@
 .admin-grid {
     border-collapse: collapse;
     min-width: 900px;
-    background: #181a1b;
+    background: rgba(255,255,255,0.7);
     width: 100%;
 }
 

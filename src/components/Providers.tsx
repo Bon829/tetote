@@ -16,52 +16,52 @@ const localization = {
         ...jaJP.signIn,
         start: {
             ...jaJP.signIn?.start,
-            title: "ログイン・新規登録",
-            subtitle: "ご利用のメールアドレスでログインできます",
+            title: "サインイン",
+            subtitle: "メールアドレスを入力してください",
+            actionText: "アカウントをお持ちでない方は",
+            actionLink: "アカウント登録はこちら",
         },
     },
     signUp: {
         ...jaJP.signUp,
         start: {
             ...jaJP.signUp?.start,
-            title: "アカウントを作成",
-            subtitle: "情報を入力してご登録ください",
+            title: "アカウント作成",
+            subtitle: "必要事項を入力してください",
+            actionText: "既にアカウントをお持ちの方は",
+            actionLink: "ログインはこちら",
         },
     },
     unstable__errors: {
         ...jaJP.unstable__errors,
-        form_identifier_not_found: 'アカウントが見つかりません。下部リンクの『アカウントを持たない場合』から新規登録へお進みください。',
+        form_identifier_not_found: 'アカウントが見つかりません。アカウント登録へお進みください。',
+        form_identifier_exists: 'アカウントが既に登録されています。ログインへお進みください。',
     }
 };
 
 const appearance = {
     variables: {
         colorPrimary: "#B89B8A",
-        colorBackground: "#181a1b",
-        colorText: "#e8e6e3",
-        colorTextSecondary: "#a0a0a0",
-        colorInputBackground: "#242526",
-        colorInputText: "#e8e6e3",
+        colorBackground: "#FAF9F7",
+        colorText: "#3A3028",
+        colorTextSecondary: "#9E9088",
         fontFamily: "var(--font-sans), sans-serif",
         borderRadius: "8px",
     },
     elements: {
         card: {
-            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            background: "rgba(24, 26, 27, 0.8)",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.4)",
+            background: "rgba(255, 255, 255, 0.7)",
             backdropFilter: "blur(20px)",
             padding: "2.5rem 2rem",
         },
         headerTitle: {
             fontFamily: "var(--font-serif), serif",
-            color: "#e8e6e3",
+            color: "#3A3028",
         },
         headerSubtitle: {
-            color: "#a0a0a0",
-        },
-        logoBox: {
-            display: "none",
+            color: "#9E9088",
         },
         formButtonPrimary: {
             fontFamily: "var(--font-serif), serif",
@@ -79,20 +79,20 @@ const appearance = {
             }
         },
         formFieldInput: {
-            backgroundColor: "rgba(36, 37, 38, 0.9)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            color: "#e8e6e3",
+            backgroundColor: "rgba(255, 255, 255, 0.6)",
+            border: "1px solid rgba(182, 162, 142, 0.2)",
+            color: "#3A3028",
             "&:focus": {
                 border: "1px solid #B89B8A",
-                boxShadow: "0 0 0 2px rgba(184, 155, 138, 0.2)",
+                boxShadow: "0 0 0 2px rgba(184, 155, 138, 0.1)",
             }
         },
         socialButtonsBlockButton: {
-            backgroundColor: "rgba(36, 37, 38, 0.7)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            color: "#e8e6e3",
+            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            border: "1px solid rgba(182, 162, 142, 0.2)",
+            color: "#3A3028",
             "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backgroundColor: "rgba(182, 162, 142, 0.05)",
             }
         },
         footerActionLink: {
@@ -103,9 +103,9 @@ const appearance = {
             }
         },
         identityPreview: {
-            backgroundColor: "rgba(36, 37, 38, 0.9)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            color: "#e8e6e3"
+            backgroundColor: "rgba(182, 162, 142, 0.05)",
+            border: "1px solid rgba(182, 162, 142, 0.1)",
+            color: "#3A3028"
         }
     }
 };

@@ -1,7 +1,7 @@
 .mypage-outer {
     min-height: 100vh;
     padding: 8rem 5% 4rem;
-    background: linear-gradient(135deg, #181a1b 0%, #242526 100%);
+    background: linear-gradient(135deg, #FAF9F8 0%, #EDE9E4 100%);
 }
 
 .mypage-header {
@@ -139,9 +139,9 @@
 }
 
 .mypage-name-input {
-    background: rgba(255, 255, 255, 0.05);
+    background: white;
     border: 1px solid var(--color-primary);
-    color: #fff;
+    color: var(--color-bg-dark);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     font-size: 1.2rem;
