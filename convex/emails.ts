@@ -2,7 +2,7 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { Resend } from "resend";
 
-const resend = new Resend("re_cDStJA66_LUeoQGf6BWNsDzr3c1apCXGE");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendBookingConfirmation = action({
     args: {
