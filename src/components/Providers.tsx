@@ -95,12 +95,20 @@ const appearance = {
                 backgroundColor: "rgba(182, 162, 142, 0.05)",
             }
         },
+        footerAction: {
+            marginTop: "-1rem",
+            justifyContent: "center",
+        },
         footerActionLink: {
             color: "#B89B8A",
             fontWeight: "600",
+            fontSize: "0.9rem",
             "&:hover": {
                 color: "#A68A79",
             }
+        },
+        dividerRow: {
+            display: "none",
         },
         identityPreview: {
             backgroundColor: "rgba(182, 162, 142, 0.05)",

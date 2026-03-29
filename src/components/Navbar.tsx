@@ -45,8 +45,8 @@ export function Navbar() {
                     </li>
                 )}
                 {isSignedIn && isAdmin && (
-                    <li className={isActive("/admin/availability") ? "active" : ""}>
-                        <Link href="/admin/availability" onClick={closeMenu}>ADMIN</Link>
+                    <li className={isActive("/admin") ? "active" : ""}>
+                        <Link href="/admin" onClick={closeMenu}>ADMIN</Link>
                     </li>
                 )}
                 <li className="navbar-auth">
