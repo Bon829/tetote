@@ -2,7 +2,7 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Move instance creation inside handlers to avoid deployment issues with missing env vars.
 
 export const sendBookingConfirmation = action({
     args: {
@@ -14,6 +14,7 @@ export const sendBookingConfirmation = action({
         totalPrice: v.number(),
     },
     handler: async (ctx, args) => {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         try {
             console.log("Resend Request - sendBookingConfirmation:", { to: args.to, menuTitle: args.menuTitle });
             const response = await resend.emails.send({
@@ -54,6 +55,7 @@ export const sendCancellationNoticeToAdmin = action({
         time: v.string(),
     },
     handler: async (ctx, args) => {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         try {
             await resend.emails.send({
                 from: "tetote <onboarding@resend.dev>",
