@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
@@ -13,6 +13,8 @@ export default function MyPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const cancelBooking = useMutation(api.bookings.cancelBooking);
+    const settings = useQuery(api.availability.getSettings);
 
     useEffect(() => {
         if (user) {
@@ -117,6 +119,25 @@ export default function MyPage() {
                             {b.addons && b.addons.length > 0 && (
                                 <div className="booking-item-addons" style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
                                     追加: {b.addons.map((a: any) => a.title).join("・")}
+                                </div>
+                            )}
+                            {b.status === "confirmed" && (
+                                <div className="booking-item-actions" style={{ marginTop: "1rem" }}>
+                                    <button 
+                                        className="btn-outline-danger"
+                                        onClick={async () => {
+                                            if (window.confirm("この予約をキャンセルしてもよろしいですか？")) {
+                                                try {
+                                                    await cancelBooking({ bookingId: b._id });
+                                                    alert("キャンセルが完了しました。");
+                                                } catch (err: any) {
+                                                    alert(err.message || "キャンセルの実行に失敗しました。");
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        キャンセルする
+                                    </button>
                                 </div>
                             )}
                         </div>

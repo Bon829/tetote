@@ -86,6 +86,23 @@ export const toggleBlockedSlot = mutation({
     },
 });
 
+export const upsertBlockedSlots = mutation({
+    args: {
+        blockedSlots: v.array(v.object({
+            date: v.string(),
+            time: v.string(),
+        })),
+    },
+    handler: async (ctx, args) => {
+        const settings = await ctx.db.query("availability_settings").first();
+        if (settings) {
+            await ctx.db.patch(settings._id, { blockedSlots: args.blockedSlots });
+        } else {
+            await ctx.db.insert("availability_settings", { ...DEFAULT_SETTINGS, blockedSlots: args.blockedSlots });
+        }
+    },
+});
+
 // Returns a grid: { date: { time: "available" | "booked" | "blocked" } }
 export const getAvailabilityGrid = query({
     args: {
@@ -93,6 +110,7 @@ export const getAvailabilityGrid = query({
         days: v.number(),      // how many days to show
         timeSlots: v.array(v.string()), // ["10:00", "11:00", ...]
         totalDuration: v.optional(v.number()), // Total duration in minutes (including addons)
+        isAdmin: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         const settings = await ctx.db.query("availability_settings").first();
@@ -185,10 +203,10 @@ export const getAvailabilityGrid = query({
                     continue;
                 }
 
-                // Check maxAdvanceDays
+                // Check maxAdvanceDays (Skip for admins)
                 const maxDate = new Date(now);
                 maxDate.setDate(maxDate.getDate() + cfg.maxAdvanceDays);
-                if (slotDateTime > maxDate) {
+                if (!args.isAdmin && slotDateTime > maxDate) {
                     grid[dateStr][time] = "blocked";
                     continue;
                 }

@@ -13,14 +13,14 @@ const TIME_SLOTS = [
 ];
 
 const DAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
-const GRID_DAYS = 14;
+const GRID_DAYS_TO_SHOW = 7; // Show 7 days at a time for better UX on mobile/admin
+const ADMIN_MAX_DAYS = 90; // Allow admins to look up to 90 days ahead
 
-function getDateRange(days: number) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+function getDateRange(startDate: string, days: number) {
+    const start = new Date(startDate + "T00:00:00");
     return Array.from({ length: days }, (_, i) => {
-        const d = new Date(today);
-        d.setDate(d.getDate() + i);
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
         return d.toISOString().split("T")[0];
     });
 }
@@ -69,7 +69,25 @@ export default function AvailabilityAdminPage() {
     const [savingBH, setSavingBH] = useState(false);
     const [saveMsgBH, setSaveMsgBH] = useState("");
 
-    const dates = useMemo(() => getDateRange(GRID_DAYS), []);
+    const [currentGridStartDate, setCurrentGridStartDate] = useState(() => {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+    });
+
+    const [localBlockedSlots, setLocalBlockedSlots] = useState<{ date: string; time: string }[] | null>(null);
+    const [savingSlots, setSavingSlots] = useState(false);
+    const [saveMsgSlots, setSaveMsgSlots] = useState("");
+
+    const dates = useMemo(() => getDateRange(currentGridStartDate, GRID_DAYS_TO_SHOW), [currentGridStartDate]);
+
+    const availabilityGrid = useQuery(api.availability.getAvailabilityGrid, {
+        startDate: currentGridStartDate,
+        days: GRID_DAYS_TO_SHOW,
+        timeSlots: TIME_SLOTS,
+        isAdmin: true,
+    });
+
+    const upsertBlockedSlots = useMutation(api.availability.upsertBlockedSlots);
 
     const effectiveUnit = leadTimeUnit ?? (settings?.leadTimeHours && settings.leadTimeHours > 0 ? "hours" : "days");
     const effectiveValue = leadTimeValue ?? (effectiveUnit === "hours" ? (settings?.leadTimeHours ?? 2) : (settings?.leadTimeDays ?? 1));
@@ -81,7 +99,7 @@ export default function AvailabilityAdminPage() {
 
     const blockedDaysOfWeek = settings?.blockedDaysOfWeek ?? [];
     const blockedDates = settings?.blockedDates ?? [];
-    const blockedSlots = settings?.blockedSlots ?? [];
+    const blockedSlots = localBlockedSlots ?? settings?.blockedSlots ?? [];
     
     const defaultBH = Array.from({ length: 7 }, (_, i) => ({
         dayOfWeek: i,
@@ -148,6 +166,48 @@ export default function AvailabilityAdminPage() {
 
     const isSlotBlocked = (date: string, time: string) =>
         blockedSlots.some((s: { date: string; time: string }) => s.date === date && s.time === time);
+
+    const toggleLocalSlot = (date: string, time: string) => {
+        const current = [...blockedSlots];
+        const idx = current.findIndex(s => s.date === date && s.time === time);
+        if (idx >= 0) {
+            setLocalBlockedSlots(current.filter((_, i) => i !== idx));
+        } else {
+            setLocalBlockedSlots([...current, { date, time }]);
+        }
+    };
+
+    const handleSaveSlots = async () => {
+        if (!localBlockedSlots) return;
+        setSavingSlots(true);
+        setSaveMsgSlots("");
+        try {
+            await upsertBlockedSlots({ blockedSlots: localBlockedSlots });
+            setSaveMsgSlots("設定を保存しました");
+            setTimeout(() => setSaveMsgSlots(""), 2000);
+        } catch (err) {
+            setSaveMsgSlots("エラーが発生しました");
+        } finally {
+            setSavingSlots(false);
+        }
+    };
+
+    const handleNextWeek = () => {
+        const d = new Date(currentGridStartDate + "T00:00:00");
+        d.setDate(d.getDate() + 7);
+        setCurrentGridStartDate(d.toISOString().split("T")[0]);
+    };
+
+    const handlePrevWeek = () => {
+        const todayStr = new Date().toISOString().split("T")[0];
+        const d = new Date(currentGridStartDate + "T00:00:00");
+        d.setDate(d.getDate() - 7);
+        const nextStr = d.toISOString().split("T")[0];
+        if (nextStr >= todayStr) {
+            setCurrentGridStartDate(nextStr);
+        }
+    };
+
 
     const isDateBlocked = (dateStr: string) => {
         const d = new Date(dateStr + "T00:00:00");
@@ -294,14 +354,26 @@ export default function AvailabilityAdminPage() {
 
                     {/* Availability grid */}
                     <section className="admin-card">
-                        <h2 className="admin-section-title">日別・時間別の予約可否設定</h2>
-                        <p className="admin-section-desc">
-                            セルをクリックして×（予約不可）に切り替えられます。日付ヘッダーをクリックすると1日まるごとブロックできます。
-                        </p>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                            <div>
+                                <h2 className="admin-section-title">日別・時間別の予約可否設定</h2>
+                                <p className="admin-section-desc">
+                                    セルをクリックして×（予約不可）に切り替えられます。ヘッダーで1日ブロック。
+                                </p>
+                            </div>
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                                <button className="btn-outline" onClick={handlePrevWeek}>前へ</button>
+                                <button className="btn-outline" onClick={handleNextWeek}>次へ</button>
+                            </div>
+                        </div>
+
                         <div className="admin-grid-legend">
                             <span><span className="ag-open">○</span> 予約可</span>
                             <span><span className="ag-blocked">×</span> 予約不可（個別）</span>
                             <span><span className="ag-day-blocked">×</span> 非営業日</span>
+                            <span style={{ color: "var(--color-accent)", marginLeft: "auto", fontWeight: "bold" }}>
+                                {localBlockedSlots && "※変更未保存"}
+                            </span>
                         </div>
 
                         <div className="admin-grid-wrap">
@@ -353,7 +425,7 @@ export default function AvailabilityAdminPage() {
                                                     <td
                                                         key={date}
                                                         className={`ag-cell ${dayBlocked || outOfBounds ? "day-blocked" : slotBlocked ? "slot-blocked" : "open"}`}
-                                                        onClick={() => !(dayBlocked || outOfBounds) && toggleSlot({ date, time })}
+                                                        onClick={() => !(dayBlocked || outOfBounds) && toggleLocalSlot(date, time)}
                                                         title={dayBlocked || outOfBounds ? "非予約枠" : "クリックでトグル"}
                                                     >
                                                         {dayBlocked || outOfBounds ? "×" : slotBlocked ? "×" : "○"}
@@ -364,6 +436,17 @@ export default function AvailabilityAdminPage() {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", gap: "1rem" }}>
+                            <button 
+                                className="admin-btn-primary" 
+                                onClick={handleSaveSlots}
+                                disabled={savingSlots || !localBlockedSlots}
+                            >
+                                {savingSlots ? "保存中..." : "日別設定を保存する"}
+                            </button>
+                            {saveMsgSlots && <span className="admin-save-msg">{saveMsgSlots}</span>}
                         </div>
                     </section>
                 </div>
