@@ -31,13 +31,13 @@ export const createBooking = mutation({
                 name: identity.name ?? "Unknown",
                 email: identity.email ?? "",
                 clerkId: identity.subject,
-                role: (identity.publicMetadata?.role as string) ?? "user",
+                role: (identity.publicMetadata as any)?.role ?? "user",
             });
             user = await ctx.db.get(userId);
         } else {
             // Update role/name if changed in Clerk
             const updatedName = identity.name ?? user.name;
-            const updatedRole = (identity.publicMetadata?.role as string) ?? user.role;
+            const updatedRole = (identity.publicMetadata as any)?.role ?? user.role;
             if (user.name !== updatedName || user.role !== updatedRole) {
                 await ctx.db.patch(user._id, { name: updatedName, role: updatedRole });
             }
