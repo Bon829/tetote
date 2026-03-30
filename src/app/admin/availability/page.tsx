@@ -424,9 +424,6 @@ export default function AvailabilityAdminPage() {
                             <span><span className="ag-open">○</span> 予約可</span>
                             <span><span className="ag-blocked">×</span> 予約不可（個別）</span>
                             <span><span className="ag-day-blocked">×</span> 非営業日</span>
-                            <span style={{ color: "var(--color-accent)", marginLeft: "auto", fontWeight: "bold" }}>
-                                {localBlockedSlots && "※変更未保存"}
-                            </span>
                         </div>
 
                         <div className="admin-grid-wrap">
