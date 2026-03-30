@@ -148,7 +148,8 @@ function BookingPageContent() {
                 date: selectedDate, 
                 time: selectedTime,
                 totalDuration: totalDuration,
-                totalPrice: totalPrice
+                totalPrice: totalPrice,
+                emailOptIn: emailOptIn,
             });
             if (typeof window !== "undefined") {
                 localStorage.setItem("tetote_email_optin", emailOptIn.toString());

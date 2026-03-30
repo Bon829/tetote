@@ -47,8 +47,50 @@ export const sendBookingConfirmation = action({
     },
 });
 
+export const sendBookingNoticeToAdmin = action({
+    args: {
+        to: v.string(),
+        userName: v.string(),
+        menuTitle: v.string(),
+        date: v.string(),
+        time: v.string(),
+        totalPrice: v.number(),
+    },
+    handler: async (ctx, args) => {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        try {
+            await resend.emails.send({
+                from: "tetote <onboarding@resend.dev>",
+                to: args.to,
+                subject: "【tetote】新規予約が入りました",
+                html: `
+                    <div style="font-family: sans-serif; padding: 20px; color: #333;">
+                        <h2 style="color: #B89B8A;">新規予約通知</h2>
+                        <p>管理者様（${args.to}）</p>
+                        <p>以下の内容で新しい予約が入りました。</p>
+                        <hr style="border: 1px solid #eee; margin: 20px 0;" />
+                        <p><strong>お客様名:</strong> ${args.userName} 様</p>
+                        <p><strong>メニュー:</strong> ${args.menuTitle}</p>
+                        <p><strong>日時:</strong> ${args.date} ${args.time}〜</p>
+                        <p><strong>金額:</strong> ¥${args.totalPrice.toLocaleString()}</p>
+                        <hr style="border: 1px solid #eee; margin: 20px 0;" />
+                        <p style="font-size: 14px; color: #666;">
+                            詳細は管理者画面からご確認ください。
+                        </p>
+                    </div>
+                `,
+            });
+            return { success: true };
+        } catch (error) {
+            console.error("Resend error:", error);
+            return { success: false, error };
+        }
+    },
+});
+
 export const sendCancellationNoticeToAdmin = action({
     args: {
+        to: v.string(),
         userName: v.string(),
         menuTitle: v.string(),
         date: v.string(),
@@ -59,7 +101,7 @@ export const sendCancellationNoticeToAdmin = action({
         try {
             await resend.emails.send({
                 from: "tetote <onboarding@resend.dev>",
-                to: "tkn12369@gmail.com", // Temporary admin email from previous logs
+                to: args.to,
                 subject: "【tetote】予約キャンセル通知",
                 html: `
                     <div style="font-family: sans-serif; padding: 20px; color: #333;">

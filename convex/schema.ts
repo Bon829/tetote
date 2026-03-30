@@ -6,6 +6,7 @@ export default defineSchema({
         name: v.string(),
         email: v.string(),
         clerkId: v.string(),
+        role: v.optional(v.string()), // "admin" or "user"
     }).index("by_clerk_id", ["clerkId"]),
 
     menus: defineTable({
@@ -28,6 +29,7 @@ export default defineSchema({
         time: v.string(), // HH:mm
         totalDuration: v.optional(v.number()),
         totalPrice: v.optional(v.number()),
+        emailOptIn: v.optional(v.boolean()),
         status: v.union(v.literal("pending"), v.literal("confirmed"), v.literal("cancelled")),
     }).index("by_user", ["userId"])
         .index("by_date", ["date"])

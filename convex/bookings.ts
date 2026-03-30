@@ -14,6 +14,7 @@ export const createBooking = mutation({
         time: v.string(),
         totalDuration: v.number(),
         totalPrice: v.number(),
+        emailOptIn: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -30,8 +31,16 @@ export const createBooking = mutation({
                 name: identity.name ?? "Unknown",
                 email: identity.email ?? "",
                 clerkId: identity.subject,
+                role: (identity.publicMetadata?.role as string) ?? "user",
             });
             user = await ctx.db.get(userId);
+        } else {
+            // Update role/name if changed in Clerk
+            const updatedName = identity.name ?? user.name;
+            const updatedRole = (identity.publicMetadata?.role as string) ?? user.role;
+            if (user.name !== updatedName || user.role !== updatedRole) {
+                await ctx.db.patch(user._id, { name: updatedName, role: updatedRole });
+            }
         }
 
         if (!user) throw new Error("ユーザーが見つかりません");
@@ -87,19 +96,39 @@ export const createBooking = mutation({
             time: args.time,
             totalDuration: args.totalDuration,
             totalPrice: args.totalPrice,
+            emailOptIn: args.emailOptIn,
             status: "confirmed",
         });
 
-        // Trigger confirmation email
+        // Trigger confirmation email to user (if opt-in)
         const menu = await ctx.db.get(args.menuId);
-        await ctx.scheduler.runAfter(0, api.emails.sendBookingConfirmation, {
-            to: user.email,
-            userName: user.name,
-            menuTitle: menu?.title ?? "施術メニュー",
-            date: args.date,
-            time: args.time,
-            totalPrice: args.totalPrice,
-        });
+        if (args.emailOptIn) {
+            await ctx.scheduler.runAfter(0, api.emails.sendBookingConfirmation, {
+                to: user.email,
+                userName: user.name,
+                menuTitle: menu?.title ?? "施術メニュー",
+                date: args.date,
+                time: args.time,
+                totalPrice: args.totalPrice,
+            });
+        }
+
+        // Trigger notification to ALL admins
+        const admins = await ctx.db
+            .query("users")
+            .filter((q) => q.eq(q.field("role"), "admin"))
+            .collect();
+        
+        for (const admin of admins) {
+            await ctx.scheduler.runAfter(0, api.emails.sendBookingNoticeToAdmin, {
+                to: admin.email,
+                userName: user.name,
+                menuTitle: menu?.title ?? "メニュー",
+                date: args.date,
+                time: args.time,
+                totalPrice: args.totalPrice,
+            });
+        }
 
         return bookingId;
     },
@@ -174,16 +203,25 @@ export const cancelBooking = mutation({
 
         await ctx.db.patch(args.bookingId, { status: "cancelled" });
 
-        // Trigger admin notification email
+        // Trigger admin notification email (to ALL admins)
+        const admins = await ctx.db
+            .query("users")
+            .filter((q) => q.eq(q.field("role"), "admin"))
+            .collect();
+
         const user = await ctx.db.get(booking.userId);
         const menu = await ctx.db.get(booking.menuId);
+        
         if (user && menu) {
-            await ctx.scheduler.runAfter(0, api.emails.sendCancellationNoticeToAdmin, {
-                userName: user.name,
-                menuTitle: menu.title,
-                date: booking.date,
-                time: booking.time,
-            });
+            for (const admin of admins) {
+                await ctx.scheduler.runAfter(0, api.emails.sendCancellationNoticeToAdmin, {
+                    to: admin.email,
+                    userName: user.name,
+                    menuTitle: menu.title,
+                    date: booking.date,
+                    time: booking.time,
+                });
+            }
         }
     },
 });
